@@ -20,3 +20,63 @@ loc_4043BF,0x00,0x3F ; xchg   edi,esi
 loc_40440E,0x3F,0x00 ; jne    0x4043e6
 loc_4043E4,0x3F,0x00 ; mov    ecx,ebx
 loc_4043E6,0x00,0x3F ; xchg   edi,esi
+
+; 0x405274 needs FL_ZERO across a region boundary
+loc_405274,0x00,0x08 ; movb 0xff, 0x628b3a
+
+; 0x4057A0 needs FL_ZERO across a region boundary
+loc_4057A0,0x00,0x08 ; push ax
+
+; 0x406404 needs FL_ZERO across a region boundary
+loc_406404,0x00,0x08 ; call 0x40638f
+
+; 0x406D36 needs FL_ZERO across a region boundary
+loc_406D36,0x00,0x08 ; push esi
+
+; 0x407CA1 needs FL_ZERO across a region boundary
+loc_407CA1,0x00,0x08 ; mov ax, 0x26
+
+; 0x407D16 needs FL_ZERO across a region boundary
+loc_407D16,0x00,0x08 ; mov ax, 0x3c
+
+; 0x407D6D needs FL_ZERO across a region boundary
+loc_407D6D,0x00,0x08 ; push esi
+
+; 0x40F750 needs FL_ZERO across a region boundary
+loc_40F750,0x00,0x08 ; mov ebp, esi
+
+; the callback of the effect list (0x406630: call edi, then jne) returns its result in the flags
+loc_407627,0x08,0x00 ; ret (after dec word [0x437f90])
+loc_40760B,0x08,0x00 ; ret (after dec word [0x437f90]): the same callback of the fade in the other direction (0x4075f0)
+
+; the allocator of the pool 0x437c70 (0x40638f) returns its result in ZF: the callers test it (jz after the call)
+loc_4063E4,0x08,0x00 ; ret (after add esi, 0x2: the block is allocated, ZF is clear)
+loc_4063EC,0x08,0x00 ; ret (after cmp ax, ax: no free block, ZF is set)
+loc_406403,0x08,0x00 ; ret (after add esi, 0x2: the block is allocated, ZF is clear)
+loc_406424,0x08,0x00 ; ret of the allocator that clears the block (0x406404)
+
+; the callers of these routines test ZF after the call (jz/jnz), the flags of the last instruction must reach the ret
+loc_405459,0x08,0x00 ; ret of 0x4053f2 (after or bx, 0x8000 / 0x1000: ZF is clear)
+loc_4064F4,0x08,0x00 ; ret of 0x4064d0 (after test eax, eax)
+loc_407D07,0x08,0x00 ; ret of 0x407ca5 / 0x407cab (after test esi, esi)
+loc_407F36,0x08,0x00 ; ret of 0x407ea4 (after cmp dword [esi], 0x0)
+loc_407FEA,0x08,0x00 ; ret of 0x407f37 / 0x407f43 (after cmp dword [edi], 0x0)
+loc_40671C,0x08,0x00 ; ret of 0x40670a (after dec ebx)
+
+; the handlers of the callback objects (list 0x629080): ZF set = the object is deleted (0x406632)
+loc_405CA5,0x08,0x00 ; ret of the handler 0x405c6d (after cmp word [esi+0x14], 0x0)
+loc_40EE0F,0x08,0x00 ; ret of the handler 0x40edef (after add dword [esi+0xe], 0x3: ZF is clear)
+
+; the hit tests of the objects (0x407892 and 0x407955): the caller reads ZF after call
+loc_4078FD,0x08,0x00 ; ret of 0x407892 (after dec byte [0x6290e1]: no hit)
+loc_407927,0x08,0x00 ; ret of 0x407892 (after dec byte [0x6290e0])
+loc_407954,0x08,0x00 ; ret of 0x407892 (after test eax, eax)
+loc_407A18,0x08,0x00 ; ret of 0x407955 (after cmp byte [edi+0x4], 0xf6)
+loc_407A29,0x08,0x00 ; ret of 0x407955 (after inc eax: ZF is clear, a hit)
+loc_407A2C,0x08,0x00 ; ret of 0x407955 (after xor eax, eax: ZF is set, no hit)
+
+; the update of an object (0x4087a0): 0x407e6e reads ZF after call
+loc_40883F,0x08,0x00 ; ret (after test esi, esi)
+loc_40884E,0x08,0x00 ; ret (after inc edi)
+loc_408AC1,0x08,0x00 ; ret (after cmp eax, eax: ZF is set)
+loc_408BCB,0x08,0x00 ; ret (after the flags of the earlier instructions)

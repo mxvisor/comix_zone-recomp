@@ -10,6 +10,6 @@ ENVP=CZ
 DATA_DEFAULT="$GAME_REPO/build/disc"     # make disc: the image with game/portable.cfg over it
 DATA_MARKER=COMIX.EXE                   # a file the data directory must hold
 CD_DEFAULT="$GAME_REPO/../iso/CD/Comix.cue"
-WINE_NAME=comix-zone-wine
+WINE_NAME=dos-recomp-wine
 
 run_wine "$@"

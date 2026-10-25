@@ -1,0 +1,82 @@
+;part of static recompiler -- do not edit
+
+;;
+;;  Copyright (C) 2019 Roman Pauer
+;;
+;;  Permission is hereby granted, free of charge, to any person obtaining a copy of
+;;  this software and associated documentation files (the "Software"), to deal in
+;;  the Software without restriction, including without limitation the rights to
+;;  use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+;;  of the Software, and to permit persons to whom the Software is furnished to do
+;;  so, subject to the following conditions:
+;;
+;;  The above copyright notice and this permission notice shall be included in all
+;;  copies or substantial portions of the Software.
+;;
+;;  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;;  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;;  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;;  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;;  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;;  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;;  SOFTWARE.
+;;
+
+;Comix Zone: SR's llasm_pushx.llinc with the stack accesses marked unaligned.
+;The game's tasks have their own stacks inside its heap (blocks of 2-byte
+;alignment), so esp is not a multiple of 4 and "align 4" on a push or a pop
+;is undefined behaviour for LLVM: it dropped code after such accesses.
+;The C half (x86_pushad...) is SR's llasm_pushx.c.
+
+funcv x86_pushad $
+funcv x86_pushaw $
+funcv x86_popad $
+funcv x86_popaw $
+funcv x86_popfd $
+funcv x86_popfw $
+
+macro PUSH val
+    sub esp, esp, 4
+    store \val, esp, 1
+endm
+
+macro PUSHAD
+    call x86_pushad $
+endm
+
+macro PUSHAW
+    call x86_pushaw $
+endm
+
+macro PUSHFD
+    sub esp, esp, 4
+    store eflags, esp, 1
+endm
+
+macro PUSHFW
+    sub esp, esp, 2
+    store16 eflags, esp, 1
+endm
+
+
+macro POP reg
+    load \reg, esp, 1
+    add esp, esp, 4
+endm
+
+macro POPAD
+    call x86_popad $
+endm
+
+macro POPAW
+    call x86_popaw $
+endm
+
+macro POPFD
+    call x86_popfd $
+endm
+
+macro POPFW
+    call x86_popfw $
+endm
+

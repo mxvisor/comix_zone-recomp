@@ -1,0 +1,821 @@
+;;
+;;  Comix Zone Win32 import bridges, generated from the import table of COMIX.EXE
+;;  (argc from the MinGW x86 headers) by SR-SDK/tools/gen_import_shim.py.
+;;  Each proc pops its stdcall arguments before returning into the emulated caller.
+;;  Generated: 2026-10-21
+;;
+
+include llasm.llinc
+include Game-asm-calls.llinc
+
+; Call_Asm_Stack10 is not in Game-asm-calls.llinc. Same shape as the others.
+macro Call_Asm_Stack10 proc_name
+    add tmp0, esp, 4
+    load tmp0, tmp0, 4
+    add tmp1, esp, 4 + 1*4
+    load tmp1, tmp1, 4
+    add tmp2, esp, 4 + 2*4
+    load tmp2, tmp2, 4
+    add tmp3, esp, 4 + 3*4
+    load tmp3, tmp3, 4
+    add tmp4, esp, 4 + 4*4
+    load tmp4, tmp4, 4
+    add tmp5, esp, 4 + 5*4
+    load tmp5, tmp5, 4
+    add tmp6, esp, 4 + 6*4
+    load tmp6, tmp6, 4
+    add tmp7, esp, 4 + 7*4
+    load tmp7, tmp7, 4
+    add tmp8, esp, 4 + 8*4
+    load tmp8, tmp8, 4
+    add tmp9, esp, 4 + 9*4
+    load tmp9, tmp9, 4
+    call \proc_name tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9
+    mov eax, tmp0
+endm
+
+; (USER32.dll)
+func InvalidateRect_c a0, a1, a2
+proc InvalidateRect_asm2c public
+
+        Call_Asm_Stack3 InvalidateRect_c
+
+        Call_Asm_Return 3
+
+
+endp ; end procedure InvalidateRect_asm2c
+
+; (USER32.dll)
+func WinHelpA_c a0, a1, a2, a3
+proc WinHelpA_asm2c public
+
+        Call_Asm_Stack4 WinHelpA_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure WinHelpA_asm2c
+
+; (USER32.dll)
+func GetDC_c a0
+proc GetDC_asm2c public
+
+        Call_Asm_Stack1 GetDC_c
+
+        Call_Asm_Return 1
+
+
+endp ; end procedure GetDC_asm2c
+
+; (USER32.dll)
+func SendMessageA_c a0, a1, a2, a3
+proc SendMessageA_asm2c public
+
+        Call_Asm_Stack4 SendMessageA_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure SendMessageA_asm2c
+
+; (USER32.dll)
+func EndDialog_c a0, a1
+proc EndDialog_asm2c public
+
+        Call_Asm_Stack2 EndDialog_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure EndDialog_asm2c
+
+; (USER32.dll)
+func SendDlgItemMessageA_c a0, a1, a2, a3, a4
+proc SendDlgItemMessageA_asm2c public
+
+        Call_Asm_Stack5 SendDlgItemMessageA_c
+
+        Call_Asm_Return 5
+
+endp ; end procedure SendDlgItemMessageA_asm2c
+
+; (USER32.dll)
+func GetMenu_c a0
+proc GetMenu_asm2c public
+
+        Call_Asm_Stack1 GetMenu_c
+
+        Call_Asm_Return 1
+
+
+endp ; end procedure GetMenu_asm2c
+
+; (USER32.dll)
+func GetDlgItem_c a0, a1
+proc GetDlgItem_asm2c public
+
+        Call_Asm_Stack2 GetDlgItem_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure GetDlgItem_asm2c
+
+; (USER32.dll)
+func CheckMenuItem_c a0, a1, a2
+proc CheckMenuItem_asm2c public
+
+        Call_Asm_Stack3 CheckMenuItem_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure CheckMenuItem_asm2c
+
+; (USER32.dll)
+func DialogBoxParamA_c a0, a1, a2, a3, a4
+proc DialogBoxParamA_asm2c public
+
+        Call_Asm_Stack5 DialogBoxParamA_c
+
+        Call_Asm_Return 5
+
+endp ; end procedure DialogBoxParamA_asm2c
+
+; (USER32.dll)
+func FindWindowA_c a0, a1
+proc FindWindowA_asm2c public
+
+        Call_Asm_Stack2 FindWindowA_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure FindWindowA_asm2c
+
+; (USER32.dll)
+func IsIconic_c a0
+proc IsIconic_asm2c public
+
+        Call_Asm_Stack1 IsIconic_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure IsIconic_asm2c
+
+; (USER32.dll)
+func GetLastActivePopup_c a0
+proc GetLastActivePopup_asm2c public
+
+        Call_Asm_Stack1 GetLastActivePopup_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure GetLastActivePopup_asm2c
+
+; (USER32.dll)
+func SetForegroundWindow_c a0
+proc SetForegroundWindow_asm2c public
+
+        Call_Asm_Stack1 SetForegroundWindow_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure SetForegroundWindow_asm2c
+
+; (USER32.dll)
+func AdjustWindowRect_c a0, a1, a2
+proc AdjustWindowRect_asm2c public
+
+        Call_Asm_Stack3 AdjustWindowRect_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AdjustWindowRect_asm2c
+
+; (USER32.dll)
+func GetDesktopWindow_c a0
+proc GetDesktopWindow_asm2c public
+
+        Call_Asm_Stack1 GetDesktopWindow_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure GetDesktopWindow_asm2c
+
+; (USER32.dll)
+func GetWindowRect_c a0, a1
+proc GetWindowRect_asm2c public
+
+        Call_Asm_Stack2 GetWindowRect_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure GetWindowRect_asm2c
+
+; (USER32.dll)
+func GetSubMenu_c a0, a1
+proc GetSubMenu_asm2c public
+
+        Call_Asm_Stack2 GetSubMenu_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure GetSubMenu_asm2c
+
+; (USER32.dll)
+func RemoveMenu_c a0, a1, a2
+proc RemoveMenu_asm2c public
+
+        Call_Asm_Stack3 RemoveMenu_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure RemoveMenu_asm2c
+
+; (USER32.dll)
+func DeleteMenu_c a0, a1, a2
+proc DeleteMenu_asm2c public
+
+        Call_Asm_Stack3 DeleteMenu_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure DeleteMenu_asm2c
+
+; (USER32.dll)
+func InsertMenuA_c a0, a1, a2, a3, a4
+proc InsertMenuA_asm2c public
+
+        Call_Asm_Stack5 InsertMenuA_c
+
+        Call_Asm_Return 5
+
+endp ; end procedure InsertMenuA_asm2c
+
+; (USER32.dll)
+func DrawMenuBar_c a0
+proc DrawMenuBar_asm2c public
+
+        Call_Asm_Stack1 DrawMenuBar_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure DrawMenuBar_asm2c
+
+; (USER32.dll)
+func BeginPaint_c a0, a1
+proc BeginPaint_asm2c public
+
+        Call_Asm_Stack2 BeginPaint_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure BeginPaint_asm2c
+
+; (USER32.dll)
+func GetClientRect_c a0, a1
+proc GetClientRect_asm2c public
+
+        Call_Asm_Stack2 GetClientRect_c
+
+        Call_Asm_Return 2
+
+
+endp ; end procedure GetClientRect_asm2c
+
+; (USER32.dll)
+func EndPaint_c a0, a1
+proc EndPaint_asm2c public
+
+        Call_Asm_Stack2 EndPaint_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure EndPaint_asm2c
+
+; (USER32.dll)
+func LoadMenuA_c a0, a1
+proc LoadMenuA_asm2c public
+
+        Call_Asm_Stack2 LoadMenuA_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure LoadMenuA_asm2c
+
+; (USER32.dll)
+func SetMenu_c a0, a1, a2
+proc SetMenu_asm2c public
+
+        Call_Asm_Stack3 SetMenu_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure SetMenu_asm2c
+
+; (USER32.dll)
+func DestroyMenu_c a0
+proc DestroyMenu_asm2c public
+
+        Call_Asm_Stack1 DestroyMenu_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure DestroyMenu_asm2c
+
+; (USER32.dll)
+func EnableMenuItem_c a0, a1, a2
+proc EnableMenuItem_asm2c public
+
+        Call_Asm_Stack3 EnableMenuItem_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure EnableMenuItem_asm2c
+
+; (USER32.dll)
+func ReleaseDC_c a0, a1
+proc ReleaseDC_asm2c public
+
+        Call_Asm_Stack2 ReleaseDC_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure ReleaseDC_asm2c
+
+; (GDI32.dll)
+func AnimatePalette_c a0, a1, a2, a3
+proc AnimatePalette_asm2c public
+
+        Call_Asm_Stack4 AnimatePalette_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure AnimatePalette_asm2c
+
+; (GDI32.dll)
+func GetDeviceCaps_c a0, a1
+proc GetDeviceCaps_asm2c public
+
+        Call_Asm_Stack2 GetDeviceCaps_c
+
+        Call_Asm_Return 2
+
+
+endp ; end procedure GetDeviceCaps_asm2c
+
+; (GDI32.dll)
+func SelectPalette_c a0, a1, a2
+proc SelectPalette_asm2c public
+
+        Call_Asm_Stack3 SelectPalette_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure SelectPalette_asm2c
+
+; (GDI32.dll)
+func RealizePalette_c a0
+proc RealizePalette_asm2c public
+
+        Call_Asm_Stack1 RealizePalette_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure RealizePalette_asm2c
+
+; (GDI32.dll)
+func GetSystemPaletteEntries_c a0, a1, a2, a3
+proc GetSystemPaletteEntries_asm2c public
+
+        Call_Asm_Stack4 GetSystemPaletteEntries_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure GetSystemPaletteEntries_asm2c
+
+; (GDI32.dll)
+func CreatePalette_c a0
+proc CreatePalette_asm2c public
+
+        Call_Asm_Stack1 CreatePalette_c
+
+        Call_Asm_Return 1
+
+
+endp ; end procedure CreatePalette_asm2c
+
+; (WINMM.dll)
+func joyGetPos_c a0, a1
+proc joyGetPos_asm2c public
+
+        Call_Asm_Stack2 joyGetPos_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure joyGetPos_asm2c
+
+; (WINMM.dll)
+func midiOutGetNumDevs_c
+proc midiOutGetNumDevs_asm2c public
+
+        Call_Asm_Stack0 midiOutGetNumDevs_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure midiOutGetNumDevs_asm2c
+
+; (WINMM.dll)
+func waveOutGetNumDevs_c
+proc waveOutGetNumDevs_asm2c public
+
+        Call_Asm_Stack0 waveOutGetNumDevs_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure waveOutGetNumDevs_asm2c
+
+; (WING32.dll)
+func WinGRecommendDIBFormat_c a0
+proc WinGRecommendDIBFormat_asm2c public
+
+        Call_Asm_Stack1 WinGRecommendDIBFormat_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure WinGRecommendDIBFormat_asm2c
+
+; (WING32.dll)
+func WinGStretchBlt_c a0, a1, a2, a3, a4, a5, a6, a7, a8, a9
+proc WinGStretchBlt_asm2c public
+
+        Call_Asm_Stack10 WinGStretchBlt_c
+
+        Call_Asm_Return 10
+
+endp ; end procedure WinGStretchBlt_asm2c
+
+; (WING32.dll)
+func WinGSetDIBColorTable_c a0, a1, a2, a3
+proc WinGSetDIBColorTable_asm2c public
+
+        Call_Asm_Stack4 WinGSetDIBColorTable_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure WinGSetDIBColorTable_asm2c
+
+; (WING32.dll)
+func WinGCreateDC_c
+proc WinGCreateDC_asm2c public
+
+        Call_Asm_Stack0 WinGCreateDC_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure WinGCreateDC_asm2c
+
+; (WING32.dll)
+func WinGCreateBitmap_c a0, a1, a2
+proc WinGCreateBitmap_asm2c public
+
+        Call_Asm_Stack3 WinGCreateBitmap_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure WinGCreateBitmap_asm2c
+
+; (WAIL32.dll)
+func AIL_sample_status_c a0
+proc AIL_sample_status_asm2c public
+
+        Call_Asm_Stack1 AIL_sample_status_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_sample_status_asm2c
+
+; (WAIL32.dll)
+func AIL_serve_c
+proc AIL_serve_asm2c public
+
+        Call_Asm_Stack0 AIL_serve_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure AIL_serve_asm2c
+
+; (WAIL32.dll)
+func AIL_resume_sample_c a0
+proc AIL_resume_sample_asm2c public
+
+        Call_Asm_Stack1 AIL_resume_sample_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_resume_sample_asm2c
+
+; (WAIL32.dll)
+func AIL_resume_sequence_c a0
+proc AIL_resume_sequence_asm2c public
+
+        Call_Asm_Stack1 AIL_resume_sequence_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_resume_sequence_asm2c
+
+; (WAIL32.dll)
+func AIL_stop_sample_c a0
+proc AIL_stop_sample_asm2c public
+
+        Call_Asm_Stack1 AIL_stop_sample_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_stop_sample_asm2c
+
+; (WAIL32.dll)
+func AIL_stop_sequence_c a0
+proc AIL_stop_sequence_asm2c public
+
+        Call_Asm_Stack1 AIL_stop_sequence_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_stop_sequence_asm2c
+
+; (WAIL32.dll)
+func AIL_end_sample_c a0
+proc AIL_end_sample_asm2c public
+
+        Call_Asm_Stack1 AIL_end_sample_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_end_sample_asm2c
+
+; (WAIL32.dll)
+func AIL_end_sequence_c a0
+proc AIL_end_sequence_asm2c public
+
+        Call_Asm_Stack1 AIL_end_sequence_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_end_sequence_asm2c
+
+; (WAIL32.dll)
+func AIL_shutdown_c
+proc AIL_shutdown_asm2c public
+
+        Call_Asm_Stack0 AIL_shutdown_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure AIL_shutdown_asm2c
+
+; (WAIL32.dll)
+func AIL_startup_c
+proc AIL_startup_asm2c public
+
+        Call_Asm_Stack0 AIL_startup_c
+
+        Call_Asm_Return 0
+
+endp ; end procedure AIL_startup_asm2c
+
+; (WAIL32.dll)
+func AIL_allocate_sequence_handle_c a0
+proc AIL_allocate_sequence_handle_asm2c public
+
+        Call_Asm_Stack1 AIL_allocate_sequence_handle_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_allocate_sequence_handle_asm2c
+
+; (WAIL32.dll)
+func AIL_allocate_sample_handle_c a0
+proc AIL_allocate_sample_handle_asm2c public
+
+        Call_Asm_Stack1 AIL_allocate_sample_handle_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_allocate_sample_handle_asm2c
+
+; (WAIL32.dll)
+func AIL_init_sample_c a0
+proc AIL_init_sample_asm2c public
+
+        Call_Asm_Stack1 AIL_init_sample_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_init_sample_asm2c
+
+; (WAIL32.dll)
+func AIL_set_sample_type_c a0, a1, a2
+proc AIL_set_sample_type_asm2c public
+
+        Call_Asm_Stack3 AIL_set_sample_type_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AIL_set_sample_type_asm2c
+
+; (WAIL32.dll)
+func AIL_set_sample_address_c a0, a1, a2
+proc AIL_set_sample_address_asm2c public
+
+        Call_Asm_Stack3 AIL_set_sample_address_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AIL_set_sample_address_asm2c
+
+; (WAIL32.dll)
+func AIL_start_sample_c a0
+proc AIL_start_sample_asm2c public
+
+        Call_Asm_Stack1 AIL_start_sample_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_start_sample_asm2c
+
+; (WAIL32.dll)
+func AIL_waveOutOpen_c a0, a1, a2, a3
+proc AIL_waveOutOpen_asm2c public
+
+        Call_Asm_Stack4 AIL_waveOutOpen_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure AIL_waveOutOpen_asm2c
+
+; (WAIL32.dll)
+func AIL_sequence_status_c a0
+proc AIL_sequence_status_asm2c public
+
+        Call_Asm_Stack1 AIL_sequence_status_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_sequence_status_asm2c
+
+; (WAIL32.dll)
+func MEM_free_lock_c a0
+proc MEM_free_lock_asm2c public
+
+        Call_Asm_Stack1 MEM_free_lock_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure MEM_free_lock_asm2c
+
+; (WAIL32.dll)
+func AIL_copy_to_MEM16_c a0, a1, a2
+proc AIL_copy_to_MEM16_asm2c public
+
+        Call_Asm_Stack3 AIL_copy_to_MEM16_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AIL_copy_to_MEM16_asm2c
+
+; (WAIL32.dll)
+func AIL_init_sequence_c a0, a1, a2
+proc AIL_init_sequence_asm2c public
+
+        Call_Asm_Stack3 AIL_init_sequence_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AIL_init_sequence_asm2c
+
+; (WAIL32.dll)
+func AIL_start_sequence_c a0
+proc AIL_start_sequence_asm2c public
+
+        Call_Asm_Stack1 AIL_start_sequence_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure AIL_start_sequence_asm2c
+
+; (WAIL32.dll)
+func AIL_midiOutOpen_c a0, a1, a2
+proc AIL_midiOutOpen_asm2c public
+
+        Call_Asm_Stack3 AIL_midiOutOpen_c
+
+        Call_Asm_Return 3
+
+endp ; end procedure AIL_midiOutOpen_asm2c
+
+; (WAIL32.dll)
+func MEM_alloc_lock_c a0
+proc MEM_alloc_lock_asm2c public
+
+        Call_Asm_Stack1 MEM_alloc_lock_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure MEM_alloc_lock_asm2c
+
+; (KERNEL32.dll)
+func SetEnvironmentVariableA_c a0, a1
+proc SetEnvironmentVariableA_asm2c public
+
+        Call_Asm_Stack2 SetEnvironmentVariableA_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure SetEnvironmentVariableA_asm2c
+
+; (KERNEL32.dll)
+func GetProfileStringA_c a0, a1, a2, a3, a4
+proc GetProfileStringA_asm2c public
+
+        Call_Asm_Stack5 GetProfileStringA_c
+
+        Call_Asm_Return 5
+
+endp ; end procedure GetProfileStringA_asm2c
+
+; (KERNEL32.dll)
+func GetPrivateProfileIntA_c a0, a1, a2, a3
+proc GetPrivateProfileIntA_asm2c public
+
+        Call_Asm_Stack4 GetPrivateProfileIntA_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure GetPrivateProfileIntA_asm2c
+
+; (KERNEL32.dll)
+func WritePrivateProfileStringA_c a0, a1, a2, a3
+proc WritePrivateProfileStringA_asm2c public
+
+        Call_Asm_Stack4 WritePrivateProfileStringA_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure WritePrivateProfileStringA_asm2c
+
+; (KERNEL32.dll)
+func LoadModule_c a0, a1
+proc LoadModule_asm2c public
+
+        Call_Asm_Stack2 LoadModule_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure LoadModule_asm2c
+
+; (KERNEL32.dll)
+func GetFileSize_c a0
+proc GetFileSize_asm2c public
+
+        Call_Asm_Stack1 GetFileSize_c
+
+        Call_Asm_Return 1
+
+endp ; end procedure GetFileSize_asm2c
+
+; (KERNEL32.dll)
+func RtlUnwind_c a0, a1, a2, a3
+proc RtlUnwind_asm2c public
+
+        Call_Asm_Stack4 RtlUnwind_c
+
+        Call_Asm_Return 4
+
+endp ; end procedure RtlUnwind_asm2c
+
+; (KERNEL32.dll)
+func SetConsoleCtrlHandler_c a0, a1
+proc SetConsoleCtrlHandler_asm2c public
+
+        Call_Asm_Stack2 SetConsoleCtrlHandler_c
+
+        Call_Asm_Return 2
+
+endp ; end procedure SetConsoleCtrlHandler_asm2c
+
+; (KERNEL32.dll)
+func CompareStringA_c a0, a1, a2, a3, a4, a5
+proc CompareStringA_asm2c public
+
+        Call_Asm_Stack6 CompareStringA_c
+
+        Call_Asm_Return 6
+
+endp ; end procedure CompareStringA_asm2c
+
+; (KERNEL32.dll)
+func CompareStringW_c a0, a1, a2, a3, a4, a5
+proc CompareStringW_asm2c public
+
+        Call_Asm_Stack6 CompareStringW_c
+
+        Call_Asm_Return 6
+
+endp ; end procedure CompareStringW_asm2c

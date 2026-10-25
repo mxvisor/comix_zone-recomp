@@ -1,0 +1,13 @@
+# Everything SRW writes in its working directory beside <module>.asm, one
+# name per line: the segments of this EXE, each with its data and, where the
+# segment holds code, its code. Stage 2 (recomp) produces these, stage 3 (gen)
+# copies them to build/gen/; they are game data, so they are listed here and
+# not guessed at. The PE's .idata/.rsrc/.reloc (seg04/08/09) are not game data
+# and are resolved by the loader instead.
+seg01_code.llinc
+seg01_data.llinc
+seg02_data.llinc
+seg03_data.llinc
+seg05_data.llinc
+seg06_data.llinc
+seg07_data.llinc
