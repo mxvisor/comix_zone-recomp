@@ -146,11 +146,15 @@ uint32_t CCALL DestroyMenu_c(uint32_t a0)
 }
 
 
-/* WINMM.dll (joyGetPos) */
+/* WINMM.dll (joyGetPos)
+ *
+ * Without COMIX.INI the game polls the joystick every tick.  Success with the
+ * JOYINFO left unwritten gave it stack garbage as the stick and the buttons
+ * (the hero acted as if keys were held); there is no joystick: JOYERR_UNPLUGGED. */
 uint32_t CCALL joyGetPos_c(uint32_t a0, uint32_t a1)
 {
     (void)a0; (void)a1;
-    return 0;
+    return 167;
 }
 
 /* WINMM.dll (midiOutGetNumDevs) */

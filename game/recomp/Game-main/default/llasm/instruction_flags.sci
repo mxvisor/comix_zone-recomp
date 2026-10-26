@@ -80,3 +80,24 @@ loc_40883F,0x08,0x00 ; ret (after test esi, esi)
 loc_40884E,0x08,0x00 ; ret (after inc edi)
 loc_408AC1,0x08,0x00 ; ret (after cmp eax, eax: ZF is set)
 loc_408BCB,0x08,0x00 ; ret (after the flags of the earlier instructions)
+
+; rets whose callers read ZF after the call: SRW's flag pass does not see through a call
+loc_404CE2,0x08,0x00 ; ret of loc_404C96
+loc_405347,0x08,0x00 ; ret of loc_4052F5
+loc_4053C8,0x08,0x00 ; ret of loc_405348
+loc_4053D4,0x08,0x00 ; ret of loc_4053C9 loc_4053CB
+loc_4053F1,0x08,0x00 ; ret of loc_4053D5
+loc_406310,0x08,0x00 ; ret of loc_4062F3 loc_406304
+loc_406466,0x08,0x00 ; ret of loc_406425 loc_409A6B
+loc_406481,0x08,0x00 ; ret of loc_406425 loc_409A6B
+loc_406489,0x08,0x00 ; ret of loc_406425 loc_409A6B
+loc_406511,0x08,0x00 ; ret of loc_4064D0
+loc_406621,0x08,0x00 ; ret of loc_406608
+loc_4066A3,0x08,0x00 ; ret of loc_4066A4
+loc_4076C8,0x08,0x00 ; ret of loc_40525B loc_4076AD
+loc_40775C,0x08,0x00 ; ret of loc_407713
+loc_4077D6,0x08,0x00 ; ret of loc_407713
+loc_407C7F,0x08,0x00 ; ret of loc_407C6B
+loc_407D47,0x08,0x00 ; ret of loc_407D16
+loc_4080A5,0x08,0x00 ; ret of loc_407EA4 loc_407F37 loc_407F43 loc_407FEB loc_408002
+loc_4080A8,0x08,0x00 ; ret of loc_407EA4 loc_407F37 loc_407F43 loc_407FEB loc_408002
