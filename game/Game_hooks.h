@@ -25,6 +25,9 @@ unsigned int Comix_GuestLowMemory(void);
 
 /* the game's name in the port's messages */
 #define GAME_NAME "comix zone"
+/* the game plays its music by MIDI and needs no disc: no "no CD" message */
+#define GAME_CD_OPTIONAL
+
 /* the port's environment variables: GAME_ENV("CD_IMAGE") is $CZ_CD_IMAGE */
 #define GAME_ENV(name) "CZ_" name
 
