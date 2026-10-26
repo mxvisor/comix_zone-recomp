@@ -494,6 +494,44 @@ static int ail_midi_usable(void)
 }
 #endif
 
+/* On Linux SDL_mixer plays MIDI through a SoundFont (or timidity) and fails
+ * with "Couldn't open timidity.cfg" when none is configured: take the first of
+ * the usual system SoundFonts unless $SDL_SOUNDFONTS names one. */
+static void ail_find_soundfont(void)
+{
+#ifndef _WIN32
+    static const char *const candidates[] = {
+        "/usr/share/soundfonts/default.sf2",
+        "/usr/share/soundfonts/FluidR3_GM.sf2",
+        "/usr/share/sounds/sf2/default-GM.sf2",
+        "/usr/share/sounds/sf2/FluidR3_GM.sf2",
+        "/usr/share/sf2/FluidR3_GM.sf2",
+        "/usr/share/soundfonts/freepats-general-midi.sf2",
+    };
+    static int done = 0;
+    size_t i;
+
+    if (done) return;
+    done = 1;
+
+    if (getenv("SDL_SOUNDFONTS") != NULL) return;
+
+    for (i = 0; i < sizeof(candidates) / sizeof(candidates[0]); i++)
+    {
+        FILE *f = fopen(candidates[i], "rb");
+        if (f != NULL)
+        {
+            fclose(f);
+            setenv("SDL_SOUNDFONTS", candidates[i], 0);
+            Mix_SetSoundFonts(candidates[i]);
+            AIL_LOG("soundfont %s\n", candidates[i]);
+            return;
+        }
+    }
+    AIL_LOG("no SoundFont found: set SDL_SOUNDFONTS\n");
+#endif
+}
+
 static void ail_play_sequence(ail_object *o)
 {
     uint8_t *midi;
@@ -511,6 +549,7 @@ static void ail_play_sequence(ail_object *o)
     }
 
     ail_stop_music();
+    ail_find_soundfont();
 
     size = ((uint32_t *)GUEST_MEM(o->address))[-1];     /* the size is in the header of the guest's block */
     midi = ail_xmidi_to_midi((const uint8_t *)GUEST_MEM(o->address), size, o->number, &length, &infinite);
