@@ -448,8 +448,8 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
             return 0;
         }
 
-        if (src_width < xsrc + sw) sw = src_width - xsrc;
-        if (src_height < ysrc + sh) sh = src_height - ysrc;
+        if (src_width < (int)xsrc + sw) sw = src_width - (int)xsrc;
+        if (src_height < (int)ysrc + sh) sh = src_height - (int)ysrc;
         if (sw <= 0 || sh <= 0)
         {
             return 0;
@@ -529,6 +529,7 @@ uint32_t CCALL ReleaseDC_c(uint32_t hwnd, uint32_t hdc)
 
 uint32_t CCALL GetClientRect_c(uint32_t hwnd, uint32_t rect)
 {
+    (void)hwnd;
     wing_rect *r = (wing_rect *)GUEST_MEM(rect);
     int w = WING_WIDTH, h = WING_HEIGHT;
 
@@ -550,6 +551,7 @@ uint32_t CCALL GetClientRect_c(uint32_t hwnd, uint32_t rect)
 
 uint32_t CCALL GetWindowRect_c(uint32_t hwnd, uint32_t rect)
 {
+    (void)hwnd;
     wing_rect *r = (wing_rect *)GUEST_MEM(rect);
     int w = WING_WIDTH, h = WING_HEIGHT, x = 0, y = 0;
 
