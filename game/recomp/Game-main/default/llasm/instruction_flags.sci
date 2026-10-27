@@ -101,3 +101,12 @@ loc_407C7F,0x08,0x00 ; ret of loc_407C6B
 loc_407D47,0x08,0x00 ; ret of loc_407D16
 loc_4080A5,0x08,0x00 ; ret of loc_407EA4 loc_407F37 loc_407F43 loc_407FEB loc_408002
 loc_4080A8,0x08,0x00 ; ret of loc_407EA4 loc_407F37 loc_407F43 loc_407FEB loc_408002
+
+; the tasks of the scheduler list 0x629080 (loc_4065cd creates them): the dispatcher
+; 0x406629 does "call edi" and 0x406632 reads ZF (0 = keep, 1 = unlink and free).
+; The call is indirect, so SR's flag pass does not see the reader.
+loc_404DBC,0x08,0x00 ; ret of the task 0x404db3 (after dec eax: ZF is clear)
+loc_405E36,0x08,0x00 ; ret of the task 0x405e14 (after dec ax: ZF is clear)
+loc_405E5C,0x08,0x00 ; ret of the task 0x405e54 (after test esi, esi)
+loc_406925,0x08,0x00 ; ret of the task 0x40691b (after xor ax, ax: ZF is set)
+loc_40E83B,0x08,0x00 ; ret of the task 0x40e7be (after dec eax: ZF is clear)
