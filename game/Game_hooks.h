@@ -6,7 +6,6 @@
 
 /* the original's file name (argv[0] of the guest) */
 #define GAME_MAIN_FILENAME "COMIX.EXE"
-#define GAME_CONFIG_FILENAME "ComixZone.cfg"
 
 /* the memory the game expects (game/main.c) */
 #ifdef __cplusplus
