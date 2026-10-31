@@ -24,8 +24,9 @@
 /* The sound of Comix Zone: the Miles Sound System (WAIL32.dll).  The game
  * allocates sample handles of the digital driver and plays 8/16 bit PCM from
  * memory it got from MEM_alloc_lock; the port plays the samples through the
- * SDL_mixer device of the runtime.  The sequence (music) handles are kept as
- * state only: the sequence data is not played yet. */
+ * SDL_mixer device of the runtime.  The sequences (music) are XMIDI: the port
+ * turns them into MIDI and renders them with TinySoundFont from the
+ * soundfont.sf2 of the game directory. */
 
 #include "WinApi-game.h"
 
@@ -33,23 +34,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 #include <SDL.h>
 #include <SDL_mixer.h>
 
 #include "WinApi.h"
 #include "Game_sound.h"
+#include "Game_vfs.h"
+
+#include "tsf.h"
+#include "tml.h"
+
+extern uint64_t pointer_offset;
+#define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern uint64_t pointer_offset;
-#define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
 
 extern unsigned int Game_AudioFormat;
 extern unsigned int Game_AudioChannels;
@@ -460,76 +460,152 @@ done:
     return file.data;
 }
 
-static ail_object *ail_music = NULL;      /* the sequence SDL_mixer plays */
-static Mix_Music *ail_music_handle = NULL;
-static uint8_t *ail_music_data = NULL;
+static ail_object *ail_music = NULL;      /* the sequence the TSF hook plays */
+static tsf *ail_tsf = NULL;
+static tml_message *ail_tsf_first = NULL;
+static tml_message *ail_tsf_msg = NULL;
+static double ail_tsf_time_ms = 0.0;
+static int ail_tsf_loop = 0;
+static SDL_atomic_t ail_tsf_paused;
+static SDL_atomic_t ail_tsf_finished;
+static char ail_soundfont_path_buf[1024];
 
-static void ail_stop_music(void)
+static void ail_tsf_dispatch(double until_ms)
 {
-    if (ail_music_handle != NULL)
+    while (ail_tsf_msg != NULL && (double)ail_tsf_msg->time <= until_ms)
     {
-        Mix_HaltMusic();
-        Mix_FreeMusic(ail_music_handle);
-        ail_music_handle = NULL;
+        tml_message *m = ail_tsf_msg;
+        int ch = m->channel;
+
+        switch (m->type)
+        {
+        case TML_NOTE_ON:
+            if (m->velocity > 0)
+                tsf_channel_note_on(ail_tsf, ch, m->key, m->velocity / 127.0f);
+            else
+                tsf_channel_note_off(ail_tsf, ch, m->key);
+            break;
+        case TML_NOTE_OFF:
+            tsf_channel_note_off(ail_tsf, ch, m->key);
+            break;
+        case TML_PROGRAM_CHANGE:
+            tsf_channel_set_presetnumber(ail_tsf, ch, m->program, ch == 9);
+            break;
+        case TML_CONTROL_CHANGE:
+            tsf_channel_midi_control(ail_tsf, ch, m->control, m->control_value);
+            break;
+        case TML_PITCH_BEND:
+            tsf_channel_set_pitchwheel(ail_tsf, ch, m->pitch_bend);
+            break;
+        default:
+            break;
+        }
+
+        ail_tsf_msg = m->next;
     }
-    free(ail_music_data);
-    ail_music_data = NULL;
+}
+
+static void ail_tsf_mix(void *udata, Uint8 *stream, int len)
+{
+    int frames;
+    double block_ms;
+
+    (void)udata;
+    if (ail_tsf == NULL || SDL_AtomicGet(&ail_tsf_paused)) return;
+
+    frames = len / (int)(sizeof(short) * Game_AudioChannels);
+    block_ms = frames * 1000.0 / Game_AudioRate;
+
+    ail_tsf_dispatch(ail_tsf_time_ms);
+
+    if (ail_tsf_msg == NULL)
+    {
+        if (ail_tsf_loop)
+        {
+            int ch;
+
+            for (ch = 0; ch < 16; ch++) tsf_channel_sounds_off_all(ail_tsf, ch);
+            ail_tsf_msg = ail_tsf_first;
+            ail_tsf_time_ms = 0.0;
+            ail_tsf_dispatch(0.0);
+        }
+        else
+        {
+            SDL_AtomicSet(&ail_tsf_finished, 1);
+        }
+    }
+
+    tsf_render_short(ail_tsf, (short *)stream, frames, 0);
+    ail_tsf_time_ms += block_ms;
+}
+
+static void ail_tsf_stop(void)
+{
+    Mix_HookMusic(NULL, NULL);
+    if (ail_tsf != NULL)
+    {
+        int ch;
+
+        for (ch = 0; ch < 16; ch++) tsf_channel_sounds_off_all(ail_tsf, ch);
+    }
+    tml_free(ail_tsf_first);
+    ail_tsf_first = NULL;
+    ail_tsf_msg = NULL;
+    SDL_AtomicSet(&ail_tsf_paused, 0);
+    SDL_AtomicSet(&ail_tsf_finished, 0);
     ail_music = NULL;
 }
 
-#ifdef _WIN32
-/* SDL_mixer plays MIDI through the Windows multimedia (winmm); the winmm of
- * Wine has no MIDI device behind it and crashes there, so under Wine (it
- * exports wine_get_version from ntdll) the music is left out. */
-static int ail_midi_usable(void)
+static const char *ail_soundfont_path(void)
 {
-    HMODULE ntdll = GetModuleHandleA("ntdll.dll");
+    const char *root = Game_DataRoot();
+    FILE *f;
 
-    return (ntdll == NULL) || (GetProcAddress(ntdll, "wine_get_version") == NULL);
+    snprintf(ail_soundfont_path_buf, sizeof(ail_soundfont_path_buf),
+             "%s/soundfont.sf2", root ? root : ".");
+    f = fopen(ail_soundfont_path_buf, "rb");
+    if (f == NULL) return NULL;
+    fclose(f);
+    return ail_soundfont_path_buf;
 }
-#else
-static int ail_midi_usable(void)
+
+static int ail_tsf_load(void)
 {
+    const char *path = ail_soundfont_path();
+    int ch;
+
+    if (path == NULL) { AIL_LOG("no soundfont.sf2\n"); return 0; }
+    ail_tsf = tsf_load_filename(path);
+    if (ail_tsf == NULL) { AIL_LOG("cannot load %s\n", path); return 0; }
+
+    tsf_set_output(ail_tsf,
+                   Game_AudioChannels == 2 ? TSF_STEREO_INTERLEAVED : TSF_MONO,
+                   Game_AudioRate, 0.0f);
+    if (!tsf_set_max_voices(ail_tsf, 64)) AIL_LOG("tsf_set_max_voices failed\n");
+
+    for (ch = 0; ch < 16; ch++)
+        tsf_channel_set_presetnumber(ail_tsf, ch, 0, ch == 9);
+
+    tsf_set_volume(ail_tsf, 0.5f);   /* as the old Mix_VolumeMusic(MIX_MAX_VOLUME / 2) */
+    AIL_LOG("soundfont %s\n", path);
     return 1;
 }
-#endif
 
-/* On Linux SDL_mixer plays MIDI through a SoundFont (or timidity) and fails
- * with "Couldn't open timidity.cfg" when none is configured: take the first of
- * the usual system SoundFonts unless $SDL_SOUNDFONTS names one. */
-static void ail_find_soundfont(void)
+static int ail_tsf_start(const uint8_t *midi, size_t length, int infinite)
 {
-#ifndef _WIN32
-    static const char *const candidates[] = {
-        "/usr/share/soundfonts/default.sf2",
-        "/usr/share/soundfonts/FluidR3_GM.sf2",
-        "/usr/share/sounds/sf2/default-GM.sf2",
-        "/usr/share/sounds/sf2/FluidR3_GM.sf2",
-        "/usr/share/sf2/FluidR3_GM.sf2",
-        "/usr/share/soundfonts/freepats-general-midi.sf2",
-    };
-    static int done = 0;
-    size_t i;
+    if (ail_tsf == NULL && !ail_tsf_load()) return 0;
+    ail_tsf_stop();
 
-    if (done) return;
-    done = 1;
+    ail_tsf_first = tml_load_memory(midi, (int)length);
+    if (ail_tsf_first == NULL) { AIL_LOG("tml: bad MIDI\n"); return 0; }
 
-    if (getenv("SDL_SOUNDFONTS") != NULL) return;
-
-    for (i = 0; i < sizeof(candidates) / sizeof(candidates[0]); i++)
-    {
-        FILE *f = fopen(candidates[i], "rb");
-        if (f != NULL)
-        {
-            fclose(f);
-            setenv("SDL_SOUNDFONTS", candidates[i], 0);
-            Mix_SetSoundFonts(candidates[i]);
-            AIL_LOG("soundfont %s\n", candidates[i]);
-            return;
-        }
-    }
-    AIL_LOG("no SoundFont found: set SDL_SOUNDFONTS\n");
-#endif
+    ail_tsf_msg = ail_tsf_first;
+    ail_tsf_time_ms = 0.0;
+    ail_tsf_loop = infinite;
+    SDL_AtomicSet(&ail_tsf_paused, 0);
+    SDL_AtomicSet(&ail_tsf_finished, 0);
+    Mix_HookMusic(ail_tsf_mix, NULL);
+    return 1;
 }
 
 static void ail_play_sequence(ail_object *o)
@@ -541,15 +617,7 @@ static void ail_play_sequence(ail_object *o)
 
     if (!Game_AudioIsOpen() || o->address == 0) { o->status = AIL_DONE; return; }
 
-    if (!ail_midi_usable())
-    {
-        AIL_LOG("sequence %x: no MIDI device (Wine)\n", (unsigned)o->address);
-        o->status = AIL_DONE;
-        return;
-    }
-
-    ail_stop_music();
-    ail_find_soundfont();
+    ail_tsf_stop();
 
     size = ((uint32_t *)GUEST_MEM(o->address))[-1];     /* the size is in the header of the guest's block */
     midi = ail_xmidi_to_midi((const uint8_t *)GUEST_MEM(o->address), size, o->number, &length, &infinite);
@@ -560,26 +628,14 @@ static void ail_play_sequence(ail_object *o)
         return;
     }
 
-    ail_music_handle = Mix_LoadMUS_RW(SDL_RWFromConstMem(midi, (int)length), 1);
-    if (ail_music_handle == NULL)
+    if (!ail_tsf_start(midi, length, infinite))
     {
-        AIL_LOG("sequence: SDL_mixer: %s\n", Mix_GetError());
         free(midi);
         o->status = AIL_DONE;
         return;
     }
-    ail_music_data = midi;
 
-    if (Mix_PlayMusic(ail_music_handle, infinite ? -1 : 0) < 0)
-    {
-        AIL_LOG("sequence: play: %s\n", Mix_GetError());
-        ail_stop_music();
-        o->status = AIL_DONE;
-        return;
-    }
-
-    /* the music and the samples sum up in the mixer: the music is the quieter one */
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+    free(midi);                 /* TML copied the messages */
     ail_music = o;
     o->status = AIL_PLAYING;
 }
@@ -595,7 +651,12 @@ uint32_t CCALL AIL_shutdown_c(void)
     int i;
 
     AIL_LOG("shutdown\n");
-    ail_stop_music();
+    ail_tsf_stop();
+    if (ail_tsf != NULL)
+    {
+        tsf_close(ail_tsf);
+        ail_tsf = NULL;
+    }
     for (i = 0; i < AIL_MAX_OBJECTS; i++)
     {
         if (ail_objects[i].used) ail_release_chunk(&ail_objects[i]);
@@ -785,7 +846,7 @@ uint32_t CCALL AIL_stop_sequence_c(uint32_t sequence)
 
     if (o != NULL && o->status == AIL_PLAYING)
     {
-        if (o == ail_music) Mix_PauseMusic();
+        if (o == ail_music) SDL_AtomicSet(&ail_tsf_paused, 1);
         o->status = AIL_STOPPED;
     }
     return 0;
@@ -797,7 +858,7 @@ uint32_t CCALL AIL_resume_sequence_c(uint32_t sequence)
 
     if (o != NULL && o->status == AIL_STOPPED)
     {
-        if (o == ail_music) Mix_ResumeMusic();
+        if (o == ail_music) SDL_AtomicSet(&ail_tsf_paused, 0);
         o->status = AIL_PLAYING;
     }
     return 0;
@@ -810,7 +871,7 @@ uint32_t CCALL AIL_end_sequence_c(uint32_t sequence)
     AIL_LOG("end_sequence %x\n", (unsigned)sequence);
     if (o != NULL)
     {
-        if (o == ail_music) ail_stop_music();
+        if (o == ail_music) ail_tsf_stop();
         o->status = AIL_DONE;
     }
     return 0;
@@ -821,7 +882,7 @@ uint32_t CCALL AIL_sequence_status_c(uint32_t sequence)
     ail_object *o = ail_get(sequence);
 
     if (o == NULL) return AIL_FREE;
-    if (o->status == AIL_PLAYING && o == ail_music && !Mix_PlayingMusic()) o->status = AIL_DONE;
+    if (o->status == AIL_PLAYING && o == ail_music && SDL_AtomicGet(&ail_tsf_finished)) o->status = AIL_DONE;
     return (uint32_t)o->status;
 }
 
