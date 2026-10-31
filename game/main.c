@@ -379,6 +379,9 @@ static void Comix_SetupMemory(void)
  * running yet */
 void Comix_Start(void)
 {
+#if defined(__ANDROID__)
+    setenv("CZ_MEM_LOG", "1", 1);
+#endif
     Comix_SetupMemory();
 #if defined(__ANDROID__)
     {
