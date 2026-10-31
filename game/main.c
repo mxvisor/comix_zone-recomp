@@ -289,9 +289,6 @@ static int Comix_MapGuestMemory(uintptr_t address, size_t size)
 /* how much of the guest's memory the data of the game needs (Game_memory.c) */
 extern "C" unsigned int Comix_GuestLowMemory(void)
 {
-#if defined(__ANDROID__)
-    setenv("CZ_MEM_LOG", "1", 1);
-#endif
     uint32_t range[2] = {0, 0};
 
     llasm_guest_data_range(range);
@@ -429,9 +426,6 @@ static void Comix_SetupMemory(void)
  * running yet */
 void Comix_Start(void)
 {
-#if defined(__ANDROID__)
-    setenv("CZ_MEM_LOG", "1", 1);
-#endif
     Comix_SetupMemory();
 #if defined(__ANDROID__)
     {
