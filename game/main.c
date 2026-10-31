@@ -59,6 +59,10 @@
 extern uint64_t pointer_offset;
 
 #ifndef _WIN32
+#if defined(__ANDROID__)
+static char comix_crash_path[1024];
+#endif
+
 static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
 {
     uintptr_t addr = (uintptr_t)si->si_addr;
@@ -77,6 +81,20 @@ static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
         fprintf(stderr, GAME_NAME ": the guest jumped to %" PRIxPTR " (guest address %" PRIxPTR ")\n",
                 addr, addr - (uintptr_t)pointer_offset);
     }
+
+#if defined(__ANDROID__)
+    if (comix_crash_path[0] != 0)
+    {
+        FILE *f = fopen(comix_crash_path, "a");
+
+        if (f != NULL)
+        {
+            fprintf(f, "signal %d at %p pc %p pointer_offset %p\n",
+                    sig, (void *)addr, (void *)pc, (void *)(uintptr_t)pointer_offset);
+            fclose(f);
+        }
+    }
+#endif
 
     signal(sig, SIG_DFL);
     raise(sig);
@@ -331,5 +349,15 @@ static void Comix_SetupMemory(void)
 void Comix_Start(void)
 {
     Comix_SetupMemory();
+#if defined(__ANDROID__)
+    {
+        const char *external = SDL_AndroidGetExternalStoragePath();
+
+        if (external != NULL)
+        {
+            snprintf(comix_crash_path, sizeof(comix_crash_path), "%s/crash-native.txt", external);
+        }
+    }
+#endif
     Comix_CopyGuestData();
 }
