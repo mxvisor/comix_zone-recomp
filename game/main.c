@@ -120,6 +120,36 @@ static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
                 fprintf(f, "sp  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.sp);
                 fprintf(f, "pc  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.pc);
                 Comix_CrashSymbol(f, (uintptr_t)context->uc_mcontext.regs[30]);
+
+                {
+                    uintptr_t p = (uintptr_t)context->uc_mcontext.regs[19];
+                    uintptr_t q = (uintptr_t)context->uc_mcontext.regs[0];
+                    const uintptr_t *sp = (const uintptr_t *)context->uc_mcontext.sp;
+
+                    if (p >= pointer_offset && p < pointer_offset + 0x80000000u)
+                    {
+                        fprintf(f, "heap19:");
+                        for (i = 0; i < 32; i++) fprintf(f, " %08x", ((const uint32_t *)p)[i]);
+                        fprintf(f, "\n");
+                    }
+                    if (q >= pointer_offset && q < pointer_offset + 0x80000000u)
+                    {
+                        fprintf(f, "heap0:");
+                        for (i = 0; i < 32; i++) fprintf(f, " %08x", ((const uint32_t *)q)[i]);
+                        fprintf(f, "\n");
+                    }
+                    for (i = 0; i < 64; i++)
+                    {
+                        Dl_info info;
+                        uintptr_t value = sp[i];
+
+                        if (value != 0 && dladdr((void *)value, &info) != 0 && info.dli_fbase != NULL)
+                        {
+                            fprintf(f, "stack[%02d] %p %s+0x%" PRIxPTR "\n", i, (void *)value,
+                                    info.dli_fname, value - (uintptr_t)info.dli_fbase);
+                        }
+                    }
+                }
             }
 #endif
             fclose(f);
