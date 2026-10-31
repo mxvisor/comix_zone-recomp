@@ -129,14 +129,31 @@ static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
                     if (p >= pointer_offset && p < pointer_offset + 0x80000000u)
                     {
                         fprintf(f, "heap19:");
-                        for (i = 0; i < 32; i++) fprintf(f, " %08x", ((const uint32_t *)p)[i]);
+                        for (i = 0; i < 64; i++) fprintf(f, " %08x", ((const uint32_t *)p)[i]);
                         fprintf(f, "\n");
                     }
                     if (q >= pointer_offset && q < pointer_offset + 0x80000000u)
                     {
                         fprintf(f, "heap0:");
-                        for (i = 0; i < 32; i++) fprintf(f, " %08x", ((const uint32_t *)q)[i]);
+                        for (i = 0; i < 64; i++) fprintf(f, " %08x", ((const uint32_t *)q)[i]);
                         fprintf(f, "\n");
+                    }
+                    {
+                        uintptr_t g8 = pointer_offset + (uint32_t)context->uc_mcontext.regs[8];
+                        uintptr_t g11 = pointer_offset + (uint32_t)context->uc_mcontext.regs[11];
+
+                        if (g8 >= pointer_offset && g8 < pointer_offset + 0x80000000u)
+                        {
+                            fprintf(f, "gstack8:");
+                            for (i = 0; i < 64; i++) fprintf(f, " %08x", ((const uint32_t *)g8)[i]);
+                            fprintf(f, "\n");
+                        }
+                        if (g11 >= pointer_offset && g11 < pointer_offset + 0x80000000u)
+                        {
+                            fprintf(f, "gstack11:");
+                            for (i = 0; i < 64; i++) fprintf(f, " %08x", ((const uint32_t *)g11)[i]);
+                            fprintf(f, "\n");
+                        }
                     }
                     for (i = 0; i < 64; i++)
                     {
