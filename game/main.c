@@ -41,6 +41,9 @@
 #include <signal.h>
 #include <ucontext.h>
 #include <sys/mman.h>
+#if defined(__ANDROID__)
+#include <dlfcn.h>
+#endif
 #endif
 
 #include <SDL.h>
@@ -61,6 +64,21 @@ extern uint64_t pointer_offset;
 #ifndef _WIN32
 #if defined(__ANDROID__)
 static char comix_crash_path[1024];
+
+static void Comix_CrashSymbol(FILE *f, uintptr_t value)
+{
+    Dl_info info;
+
+    if (value != 0 && dladdr((void *)value, &info) != 0 && info.dli_fbase != NULL)
+    {
+        fprintf(f, "  %p %s+0x%" PRIxPTR "\n", (void *)value, info.dli_fname,
+                value - (uintptr_t)info.dli_fbase);
+    }
+    else
+    {
+        fprintf(f, "  %p ?\n", (void *)value);
+    }
+}
 #endif
 
 static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
@@ -91,6 +109,19 @@ static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
         {
             fprintf(f, "signal %d at %p pc %p pointer_offset %p\n",
                     sig, (void *)addr, (void *)pc, (void *)(uintptr_t)pointer_offset);
+            Comix_CrashSymbol(f, (uintptr_t)&Comix_SegvHandler);
+            Comix_CrashSymbol(f, pc);
+#if defined(__aarch64__)
+            {
+                int i;
+
+                for (i = 0; i < 31; i++)
+                    fprintf(f, "x%02d %016" PRIx64 "\n", i, (uint64_t)context->uc_mcontext.regs[i]);
+                fprintf(f, "sp  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.sp);
+                fprintf(f, "pc  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.pc);
+                Comix_CrashSymbol(f, (uintptr_t)context->uc_mcontext.regs[30]);
+            }
+#endif
             fclose(f);
         }
     }
