@@ -211,8 +211,11 @@ static void Comix_CopyGuestData(void)
      * of the low memory of Windows 95 as well, so the low area of the guest's
      * address space is mapped (with zeros) and the data of the game is
      * copied into it (llasm_copy_guest_data).  The whole gigabyte on Linux
-     * (the memory is not committed); on Windows the data and a margin. */
-#ifdef _WIN32
+     * (the memory is not committed); on Windows and Android only the data and
+     * a margin: on Android the runtime has reserved the guest region and hands
+     * its arenas out of it, so a gigabyte mapping here would be overwritten by
+     * the first arenas. */
+#if defined(_WIN32) || defined(__ANDROID__)
     size = (size_t)Comix_GuestLowMemory();
 #else
     size = 0x40000000;
@@ -228,6 +231,9 @@ static void Comix_CopyGuestData(void)
         return;
     }
 
+#if defined(__ANDROID__)
+    Game_MemorySetGuestNext((uint64_t)size);
+#endif
     llasm_copy_guest_data(pointer_offset);
 }
 
