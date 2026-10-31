@@ -65,7 +65,14 @@ static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
     ucontext_t *context = (ucontext_t *)uc;
 
     /* a jump to an address outside of the code is not a read of zeros */
-    if ((uintptr_t)context->uc_mcontext.gregs[REG_RIP] == addr)
+#if defined(__x86_64__)
+    uintptr_t pc = (uintptr_t)context->uc_mcontext.gregs[REG_RIP];
+#elif defined(__aarch64__)
+    uintptr_t pc = (uintptr_t)context->uc_mcontext.pc;
+#else
+    uintptr_t pc = 0;
+#endif
+    if (pc == addr)
     {
         fprintf(stderr, GAME_NAME ": the guest jumped to %" PRIxPTR " (guest address %" PRIxPTR ")\n",
                 addr, addr - (uintptr_t)pointer_offset);
