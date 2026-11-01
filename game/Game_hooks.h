@@ -44,4 +44,8 @@ unsigned int Comix_GuestLowMemory(void);
  * The port sends those two messages when the program has no other message. */
 #define GAME_WINAPI_ACTIVATE_APP_ON_IDLE 1
 
+/* The game reads its keys with GetAsyncKeyState; on a touch screen the buttons
+ * of game/Game_touchlayout.h press them. */
+#define GAME_WINAPI_TOUCH_GAMEPAD 1
+
 #endif /* _GAME_HOOKS_H_INCLUDED_ */

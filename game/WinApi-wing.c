@@ -41,6 +41,7 @@
 #include "Game_thread.h"
 #include "WinApi.h"
 #include "WinApi-wing.h"
+#include "touchgamepad.h"
 
 /* the guest's addresses are 32 bit; on a 64 bit host they are offsets into the
  * guest's memory */
@@ -188,6 +189,30 @@ static void wing_create_window(void)
     WING_LOG("window %ix%i\n", w, h);
 }
 
+/* The picture fills a 4:3 display, whatever its size in pixels (the game
+ * stretches 320x224 to that too); the rest of the window stays black. */
+static void wing_present(void)
+{
+    SDL_Rect picture;
+    int w, h;
+
+    if (SDL_GetRendererOutputSize(wing.renderer, &w, &h) != 0)
+    {
+        return;
+    }
+
+    picture.w = (w * 3 > h * 4) ? h * 4 / 3 : w;
+    picture.h = (w * 3 > h * 4) ? h : w * 3 / 4;
+    picture.x = (w - picture.w) / 2;
+    picture.y = (h - picture.h) / 2;
+
+    SDL_SetRenderDrawColor(wing.renderer, 0, 0, 0, 255);
+    SDL_RenderClear(wing.renderer);
+    SDL_RenderCopy(wing.renderer, wing.texture, NULL, &picture);
+    TouchGamepad_Draw(wing.renderer);
+    SDL_RenderPresent(wing.renderer);
+}
+
 static void wing_alloc_pixels(int width, int height)
 {
     if (width <= 0 || height <= 0)
@@ -244,8 +269,7 @@ void Wing_ShowFrame(void)
     SDL_UpdateTexture(wing.texture, NULL, rgba, wing.width * 4);
     free(rgba);
 
-    SDL_RenderCopy(wing.renderer, wing.texture, NULL, NULL);
-    SDL_RenderPresent(wing.renderer);
+    wing_present();
 }
 
 #ifdef __cplusplus
@@ -502,8 +526,7 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
         }
     }
 
-    SDL_RenderCopy(wing.renderer, wing.texture, NULL, NULL);
-    SDL_RenderPresent(wing.renderer);
+    wing_present();
 
     return 1;
 }
