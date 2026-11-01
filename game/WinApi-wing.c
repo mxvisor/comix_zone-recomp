@@ -38,6 +38,7 @@
 #include "Game_defs.h"
 #include "Game_hooks.h"
 #include "Game_memory.h"
+#include "Game_thread.h"
 #include "WinApi.h"
 #include "WinApi-wing.h"
 
@@ -153,7 +154,7 @@ static void wing_create_window(void)
     }
 
     wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                   WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE);
+                                   WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
     if (wing.window == NULL)
     {
         fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
@@ -180,7 +181,7 @@ static void wing_create_window(void)
     }
 
     SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
-    SDL_ShowWindow(wing.window);
+    Game_ShowWindow(wing.window);
 
     /* the picture of the game is 320x240, the window may be bigger */
     SDL_GetWindowSize(wing.window, &w, &h);
