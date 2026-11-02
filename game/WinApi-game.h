@@ -56,8 +56,6 @@ uint32_t CCALL AIL_init_sequence_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL AIL_start_sequence_c(uint32_t a0);
 uint32_t CCALL AIL_midiOutOpen_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL MEM_alloc_lock_c(uint32_t a0);
-uint32_t CCALL GetPrivateProfileIntA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
-uint32_t CCALL WritePrivateProfileStringA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 
 #ifdef __cplusplus
 }

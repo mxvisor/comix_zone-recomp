@@ -735,26 +735,6 @@ proc GetProfileStringA_asm2c public
 endp ; end procedure GetProfileStringA_asm2c
 
 ; (KERNEL32.dll)
-func GetPrivateProfileIntA_c a0, a1, a2, a3
-proc GetPrivateProfileIntA_asm2c public
-
-        Call_Asm_Stack4 GetPrivateProfileIntA_c
-
-        Call_Asm_Return 4
-
-endp ; end procedure GetPrivateProfileIntA_asm2c
-
-; (KERNEL32.dll)
-func WritePrivateProfileStringA_c a0, a1, a2, a3
-proc WritePrivateProfileStringA_asm2c public
-
-        Call_Asm_Stack4 WritePrivateProfileStringA_c
-
-        Call_Asm_Return 4
-
-endp ; end procedure WritePrivateProfileStringA_asm2c
-
-; (KERNEL32.dll)
 func LoadModule_c a0, a1
 proc LoadModule_asm2c public
 

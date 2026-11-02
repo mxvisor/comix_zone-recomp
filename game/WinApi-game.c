@@ -9,16 +9,6 @@
 
 #include "WinApi-game.h"
 
-#include <stdio.h>
-#include <string.h>
-
-#include "WinApi.h"
-
-/* The guest's addresses are 32 bit; on a 64 bit host they are offsets into the
- * guest's memory. */
-extern uint64_t pointer_offset;
-#define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -166,47 +156,6 @@ uint32_t CCALL midiOutGetNumDevs_c(void)
 uint32_t CCALL waveOutGetNumDevs_c(void)
 {
     return 1;
-}
-
-/* KERNEL32.dll (GetPrivateProfileIntA) */
-/* The game's settings (sound, music, language, keys, joystick) are read from
- * COMIX.INI with this function; the stub gave every setting the value 0,
- * which switched the sound off.  The layer's GetPrivateProfileStringA reads
- * the file; a key it does not find has the default value. */
-extern uint32_t CCALL GetPrivateProfileStringA_c(const char *lpAppName, const char *lpKeyName, const char *lpDefault,
-                                                 char *lpReturnedString, uint32_t nSize, const char *lpFileName);
-
-uint32_t CCALL GetPrivateProfileIntA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
-{
-    static const char missing[] = "\x01none";
-    char value[64];
-    const char *p;
-    int number;
-
-    GetPrivateProfileStringA_c((const char *)GUEST_MEM(a0), (const char *)GUEST_MEM(a1), missing, value,
-                               sizeof(value), (const char *)GUEST_MEM(a3));
-    if (strcmp(value, missing) == 0)
-    {
-        return a2;
-    }
-
-    /* like Windows: the digits at the start, no sign */
-    p = value;
-    number = 0;
-    while (*p >= '0' && *p <= '9')
-    {
-        number = number * 10 + (*p - '0');
-        p++;
-    }
-
-    return (uint32_t)number;
-}
-
-/* KERNEL32.dll (WritePrivateProfileStringA) */
-uint32_t CCALL WritePrivateProfileStringA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3)
-{
-    (void)a0; (void)a1; (void)a2; (void)a3;
-    return 0;
 }
 
 #ifdef __cplusplus
