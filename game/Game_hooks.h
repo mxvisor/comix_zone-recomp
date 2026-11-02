@@ -7,20 +7,12 @@
 /* the original's file name (argv[0] of the guest) */
 #define GAME_MAIN_FILENAME "COMIX.EXE"
 
-/* the memory the game expects (game/main.c) */
+/* the report of a crash (game/main.c) */
 #ifdef __cplusplus
 extern "C"
 #endif
 void Comix_Start(void);
 #define GAME_WIN_START() Comix_Start()
-
-/* The data of the game is at the addresses it had in Windows 95: the
- * guest's memory below the host's image must reach the end of it (Windows). */
-#ifdef __cplusplus
-extern "C"
-#endif
-unsigned int Comix_GuestLowMemory(void);
-#define GAME_GUEST_LOW_MEMORY() Comix_GuestLowMemory()
 
 /* the game's name in the port's messages */
 #define GAME_NAME "comix zone"
