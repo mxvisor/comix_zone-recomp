@@ -18,14 +18,14 @@ uint32_t CCALL CheckMenuItem_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL IsIconic_c(uint32_t a0);
 uint32_t CCALL GetLastActivePopup_c(uint32_t a0);
 uint32_t CCALL AdjustWindowRect_c(uint32_t a0, uint32_t a1, uint32_t a2);
-uint32_t CCALL GetDesktopWindow_c(uint32_t a0);
+uint32_t CCALL GetDesktopWindow_c(void);
 uint32_t CCALL GetSubMenu_c(uint32_t a0, uint32_t a1);
 uint32_t CCALL RemoveMenu_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL DeleteMenu_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL InsertMenuA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4);
 uint32_t CCALL DrawMenuBar_c(uint32_t a0);
 uint32_t CCALL LoadMenuA_c(uint32_t a0, uint32_t a1);
-uint32_t CCALL SetMenu_c(uint32_t a0, uint32_t a1, uint32_t a2);
+uint32_t CCALL SetMenu_c(uint32_t a0, uint32_t a1);
 uint32_t CCALL GetMenu_c(uint32_t a0);
 uint32_t CCALL DestroyMenu_c(uint32_t a0);
 uint32_t CCALL EnableMenuItem_c(uint32_t a0, uint32_t a1, uint32_t a2);
@@ -58,7 +58,6 @@ uint32_t CCALL AIL_midiOutOpen_c(uint32_t a0, uint32_t a1, uint32_t a2);
 uint32_t CCALL MEM_alloc_lock_c(uint32_t a0);
 uint32_t CCALL GetPrivateProfileIntA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
 uint32_t CCALL WritePrivateProfileStringA_c(uint32_t a0, uint32_t a1, uint32_t a2, uint32_t a3);
-uint32_t CCALL GetFileSize_c(uint32_t a0);
 
 #ifdef __cplusplus
 }

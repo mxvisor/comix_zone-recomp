@@ -2,7 +2,7 @@
 ;;  Comix Zone Win32 import bridges, generated from the import table of COMIX.EXE
 ;;  (argc from the MinGW x86 headers) by SR-SDK/tools/gen_import_shim.py.
 ;;  Each proc pops its stdcall arguments before returning into the emulated caller.
-;;  Generated: 2026-10-21
+;;  Generated: 2026-11-02
 ;;
 
 include llasm.llinc
@@ -42,7 +42,6 @@ proc InvalidateRect_asm2c public
 
         Call_Asm_Return 3
 
-
 endp ; end procedure InvalidateRect_asm2c
 
 ; (USER32.dll)
@@ -62,7 +61,6 @@ proc GetDC_asm2c public
         Call_Asm_Stack1 GetDC_c
 
         Call_Asm_Return 1
-
 
 endp ; end procedure GetDC_asm2c
 
@@ -103,7 +101,6 @@ proc GetMenu_asm2c public
         Call_Asm_Stack1 GetMenu_c
 
         Call_Asm_Return 1
-
 
 endp ; end procedure GetMenu_asm2c
 
@@ -188,12 +185,12 @@ proc AdjustWindowRect_asm2c public
 endp ; end procedure AdjustWindowRect_asm2c
 
 ; (USER32.dll)
-func GetDesktopWindow_c a0
+func GetDesktopWindow_c
 proc GetDesktopWindow_asm2c public
 
-        Call_Asm_Stack1 GetDesktopWindow_c
+        Call_Asm_Stack0 GetDesktopWindow_c
 
-        Call_Asm_Return 1
+        Call_Asm_Return 0
 
 endp ; end procedure GetDesktopWindow_asm2c
 
@@ -275,7 +272,6 @@ proc GetClientRect_asm2c public
 
         Call_Asm_Return 2
 
-
 endp ; end procedure GetClientRect_asm2c
 
 ; (USER32.dll)
@@ -299,12 +295,12 @@ proc LoadMenuA_asm2c public
 endp ; end procedure LoadMenuA_asm2c
 
 ; (USER32.dll)
-func SetMenu_c a0, a1, a2
+func SetMenu_c a0, a1
 proc SetMenu_asm2c public
 
-        Call_Asm_Stack3 SetMenu_c
+        Call_Asm_Stack2 SetMenu_c
 
-        Call_Asm_Return 3
+        Call_Asm_Return 2
 
 endp ; end procedure SetMenu_asm2c
 
@@ -356,7 +352,6 @@ proc GetDeviceCaps_asm2c public
 
         Call_Asm_Return 2
 
-
 endp ; end procedure GetDeviceCaps_asm2c
 
 ; (GDI32.dll)
@@ -396,7 +391,6 @@ proc CreatePalette_asm2c public
         Call_Asm_Stack1 CreatePalette_c
 
         Call_Asm_Return 1
-
 
 endp ; end procedure CreatePalette_asm2c
 
@@ -769,16 +763,6 @@ proc LoadModule_asm2c public
         Call_Asm_Return 2
 
 endp ; end procedure LoadModule_asm2c
-
-; (KERNEL32.dll)
-func GetFileSize_c a0
-proc GetFileSize_asm2c public
-
-        Call_Asm_Stack1 GetFileSize_c
-
-        Call_Asm_Return 1
-
-endp ; end procedure GetFileSize_asm2c
 
 ; (KERNEL32.dll)
 func RtlUnwind_c a0, a1, a2, a3

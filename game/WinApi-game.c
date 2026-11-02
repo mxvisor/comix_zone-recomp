@@ -15,7 +15,7 @@
 #include "WinApi.h"
 
 /* The guest's addresses are 32 bit; on a 64 bit host they are offsets into the
- * guest's memory (the file handles of the layer are such addresses). */
+ * guest's memory. */
 extern uint64_t pointer_offset;
 #define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
 
@@ -66,9 +66,8 @@ uint32_t CCALL AdjustWindowRect_c(uint32_t a0, uint32_t a1, uint32_t a2)
 }
 
 /* USER32.dll (GetDesktopWindow) */
-uint32_t CCALL GetDesktopWindow_c(uint32_t a0)
+uint32_t CCALL GetDesktopWindow_c(void)
 {
-    (void)a0;
     return 0;
 }
 
@@ -124,9 +123,9 @@ uint32_t CCALL LoadMenuA_c(uint32_t a0, uint32_t a1)
 }
 
 /* USER32.dll (SetMenu) */
-uint32_t CCALL SetMenu_c(uint32_t a0, uint32_t a1, uint32_t a2)
+uint32_t CCALL SetMenu_c(uint32_t a0, uint32_t a1)
 {
-    (void)a0; (void)a2;
+    (void)a0;
     game_menu_handle = a1;
     return a1;
 }
@@ -208,36 +207,6 @@ uint32_t CCALL WritePrivateProfileStringA_c(uint32_t a0, uint32_t a1, uint32_t a
 {
     (void)a0; (void)a1; (void)a2; (void)a3;
     return 0;
-}
-
-/* KERNEL32.dll (GetFileSize)
- *
- * The game reads its pictures and its sequences from SPRITES.BIN and SEQS.95:
- * it asks for the size of the file and reads exactly that many bytes. With a
- * stub that returns 0 the files are read as empty, the game has no pictures
- * and draws nothing. The file handle is the one CreateFileA_c of the layer
- * has made; the guest's handle is the host pointer minus the guest's offset. */
-uint32_t CCALL GetFileSize_c(uint32_t a0)
-{
-    handle h;
-    FILE *f;
-    off_t size, pos;
-
-    if (a0 == 0) return 0xffffffffu;
-
-    h = (handle)GUEST_MEM(a0);
-    if (h == NULL || h->handle_type != HT_FILE || h->fh.f == NULL) return 0xffffffffu;
-
-    f = (FILE *)h->fh.f;
-
-    pos = ftello(f);
-    if (fseeko(f, 0, SEEK_END) != 0) return 0xffffffffu;
-    size = ftello(f);
-    fseeko(f, pos, SEEK_SET);
-
-    if (size < 0 || size > 0xffffffffll) return 0xffffffffu;
-
-    return (uint32_t)size;
 }
 
 #ifdef __cplusplus
