@@ -38,13 +38,6 @@
 #include <inttypes.h>
 #ifdef _WIN32
 #include <windows.h>
-#else
-#include <signal.h>
-#include <ucontext.h>
-#include <sys/mman.h>
-#if defined(__ANDROID__)
-#include <dlfcn.h>
-#endif
 #endif
 
 #include <SDL.h>
@@ -61,77 +54,6 @@
 #include "WinApi-kernel32.h"
 
 extern uint64_t pointer_offset;
-
-#ifndef _WIN32
-#if defined(__ANDROID__)
-static char comix_crash_path[1024];
-
-static void Comix_CrashSymbol(FILE *f, uintptr_t value)
-{
-    Dl_info info;
-
-    if (value != 0 && dladdr((void *)value, &info) != 0 && info.dli_fbase != NULL)
-    {
-        fprintf(f, "  %p %s+0x%" PRIxPTR "\n", (void *)value, info.dli_fname,
-                value - (uintptr_t)info.dli_fbase);
-    }
-    else
-    {
-        fprintf(f, "  %p ?\n", (void *)value);
-    }
-}
-#endif
-
-static void Comix_SegvHandler(int sig, siginfo_t *si, void *uc)
-{
-    uintptr_t addr = (uintptr_t)si->si_addr;
-    ucontext_t *context = (ucontext_t *)uc;
-
-    /* a jump to an address outside of the code is not a read of zeros */
-#if defined(__x86_64__)
-    uintptr_t pc = (uintptr_t)context->uc_mcontext.gregs[REG_RIP];
-#elif defined(__aarch64__)
-    uintptr_t pc = (uintptr_t)context->uc_mcontext.pc;
-#else
-    uintptr_t pc = 0;
-#endif
-    if (pc == addr)
-    {
-        fprintf(stderr, GAME_NAME ": the guest jumped to %" PRIxPTR " (guest address %" PRIxPTR ")\n",
-                addr, addr - (uintptr_t)pointer_offset);
-    }
-
-#if defined(__ANDROID__)
-    if (comix_crash_path[0] != 0)
-    {
-        FILE *f = fopen(comix_crash_path, "a");
-
-        if (f != NULL)
-        {
-            fprintf(f, "signal %d at %p pc %p pointer_offset %p\n",
-                    sig, (void *)addr, (void *)pc, (void *)(uintptr_t)pointer_offset);
-            Comix_CrashSymbol(f, (uintptr_t)&Comix_SegvHandler);
-            Comix_CrashSymbol(f, pc);
-#if defined(__aarch64__)
-            {
-                int i;
-
-                for (i = 0; i < 31; i++)
-                    fprintf(f, "x%02d %016" PRIx64 "\n", i, (uint64_t)context->uc_mcontext.regs[i]);
-                fprintf(f, "sp  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.sp);
-                fprintf(f, "pc  %016" PRIx64 "\n", (uint64_t)context->uc_mcontext.pc);
-                Comix_CrashSymbol(f, (uintptr_t)context->uc_mcontext.regs[30]);
-            }
-#endif
-            fclose(f);
-        }
-    }
-#endif
-
-    signal(sig, SIG_DFL);
-    raise(sig);
-}
-#endif
 
 #ifdef _WIN32
 /* An exception in the guest's code (an access violation, an illegal
@@ -207,34 +129,12 @@ static LONG WINAPI Comix_ExceptionHandler(EXCEPTION_POINTERS *ep)
 }
 #endif
 
-static void Comix_SetupCrashReport(void)
+/* GAME_WIN_START (Game_hooks.h): the winapi layer is up, the game is not
+ * running yet.  On Windows the crash report goes to a file of its own; on
+ * Linux and Android it is SR-SDK's (Game_CrashHandlerInstall). */
+void Comix_Start(void)
 {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(Comix_ExceptionHandler);
-#else
-    struct sigaction sa;
-
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_sigaction = Comix_SegvHandler;
-    sa.sa_flags = SA_SIGINFO | SA_NODEFER;
-    sigemptyset(&sa.sa_mask);
-    sigaction(SIGSEGV, &sa, NULL);
-#endif
-}
-
-/* GAME_WIN_START (Game_hooks.h): the winapi layer is up, the game is not
- * running yet */
-void Comix_Start(void)
-{
-    Comix_SetupCrashReport();
-#if defined(__ANDROID__)
-    {
-        const char *external = SDL_AndroidGetExternalStoragePath();
-
-        if (external != NULL)
-        {
-            snprintf(comix_crash_path, sizeof(comix_crash_path), "%s/crash-native.txt", external);
-        }
-    }
 #endif
 }
