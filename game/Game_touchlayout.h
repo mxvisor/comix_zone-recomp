@@ -33,7 +33,10 @@ static void gp_layout(int W, int H)
     int S = bar * 2 / 7;
     int gap, m, small, x, y, i;
 
-    if (S < H / 7) S = H / 7;
+    /* the D-pad is 3.5 cells wide with its margins and must fit the bar; only a
+     * screen without bars (4:3 or narrower) gets the buttons over the picture */
+    if (bar == 0) S = H / 7;
+    if (S < H / 10) S = H / 10;
     if (S > H / 5) S = H / 5;
     gap = S / 8;
     m = S / 4;
