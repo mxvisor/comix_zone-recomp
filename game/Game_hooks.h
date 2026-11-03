@@ -40,4 +40,19 @@ void Comix_Start(void);
  * of game/Game_touchlayout.h press them. */
 #define GAME_WINAPI_TOUCH_GAMEPAD 1
 
+/* Display_Shader_Key of the settings file: the key that goes through the filters of the picture
+ * (WinApi-wing.c); the game does not see it */
+#ifdef __cplusplus
+extern "C"
+#endif
+int Wing_ConfigKey(const char *key, const char *value);
+#define GAME_CONFIG_KEY(key, value) Wing_ConfigKey(key, value)
+
+struct SDL_KeyboardEvent;
+#ifdef __cplusplus
+extern "C"
+#endif
+int Wing_KeyFilter(const struct SDL_KeyboardEvent *key);
+#define GAME_KEY_FILTER(key) Wing_KeyFilter(key)
+
 #endif /* _GAME_HOOKS_H_INCLUDED_ */

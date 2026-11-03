@@ -44,6 +44,7 @@ CZ_DATA_DIR    the game's directory, when the game is not started from it
 CZ_WRITE_ROOT  where the files the game writes go (see "Saved games")
 CZ_NOSOUND=1   no digital sound (=0: sound, whatever the file says)
 CZ_NOMUSIC=1   no music (=0: music, whatever the file says)
+CZ_SHADER=crt   a filter of the picture: smooth, pixelart, scanlines, crt (none: the plain one)
 
 
 Misc

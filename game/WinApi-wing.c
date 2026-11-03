@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <SDL.h>
 
@@ -42,6 +43,8 @@
 #include "WinApi.h"
 #include "WinApi-wing.h"
 #include "touchgamepad.h"
+#include "Game_gl.h"
+#include "Game_vars.h"
 
 #define WING_LOG(...) do { if (wing_log) fprintf(stderr, "wing: " __VA_ARGS__); } while (0)
 
@@ -99,6 +102,13 @@ typedef struct {
     SDL_Renderer *renderer;
     SDL_Texture *texture;
 
+    /* Display_Shader (a mod): the picture goes through OpenGL and a filter of Game_gl.h,
+     * the window has a context in place of the renderer; 0 is the renderer's path above */
+    int shader;
+    SDL_GLContext glctx;
+    GLuint gltex;
+    int gl_width, gl_height;
+
     uint8_t *pixels;          /* the picture, palette indexed */
     int width, height;
 
@@ -126,6 +136,117 @@ static wing_state wing;
 
 /* --- the window --- */
 
+/* Display_Shader_Key=<SDL key name>|off (F9 by default): the next filter; it works when the
+ * picture started with a filter (the window has OpenGL then) */
+static SDL_Scancode wing_shader_key = SDL_SCANCODE_F9;
+
+int Wing_ConfigKey(const char *key, const char *value)
+{
+    SDL_Scancode sc;
+
+    if (strcasecmp(key, "Display_Shader_Key") != 0)
+    {
+        return 0;
+    }
+    if (strcasecmp(value, "off") == 0)
+    {
+        wing_shader_key = SDL_SCANCODE_UNKNOWN;
+        return 1;
+    }
+    sc = SDL_GetScancodeFromName(value);
+    if (sc == SDL_SCANCODE_UNKNOWN)
+    {
+        fprintf(stderr, "wing: unknown Display_Shader_Key: %s\n", value);
+    }
+    else
+    {
+        wing_shader_key = sc;
+    }
+    return 1;
+}
+
+int Wing_KeyFilter(const SDL_KeyboardEvent *key)
+{
+    if (wing.gltex == 0 || wing_shader_key == SDL_SCANCODE_UNKNOWN || key->keysym.scancode != wing_shader_key)
+    {
+        return 0;
+    }
+    if (key->type == SDL_KEYDOWN && !key->repeat)
+    {
+        wing.shader = (wing.shader + 1) % GAME_GL_SHADERS;
+        fprintf(stderr, "wing: the picture filter: %s\n", Game_GlShaderName(wing.shader));
+    }
+    return 1;
+}
+
+
+/* Display_Shader of the settings file, CZ_SHADER over it: 0 none (the renderer's path) */
+static int wing_shader(void)
+{
+    const char *name = getenv(GAME_ENV("SHADER"));
+    int shader;
+
+    if (name == NULL || name[0] == 0) name = Game_Shader;
+    if (name[0] == 0) return 0;
+    shader = Game_GlShaderParse(name);
+    if (shader < 0)
+    {
+        fprintf(stderr, "wing: unknown Display_Shader: %s\n", name);
+        return 0;
+    }
+    return shader;
+}
+
+/* the picture of the game is there to draw into */
+static int wing_has_texture(void)
+{
+    return wing.texture != NULL || wing.gltex != 0;
+}
+
+/* the picture at this size (a mode change of the game) */
+static int wing_texture_size(int w, int h)
+{
+    if (wing.gltex != 0)
+    {
+        wing.gl_width = w;
+        wing.gl_height = h;
+        glBindTexture(GL_TEXTURE_2D, wing.gltex);
+        Game_GlTexImageBgra(0, w, h, NULL);
+        return 1;
+    }
+    {
+        int tw = 0, th = 0;
+
+        SDL_QueryTexture(wing.texture, NULL, NULL, &tw, &th);
+        if (tw != w || th != h)
+        {
+            SDL_DestroyTexture(wing.texture);
+            wing.texture = SDL_CreateTexture(wing.renderer, SDL_PIXELFORMAT_ARGB8888,
+                                             SDL_TEXTUREACCESS_STREAMING, w, h);
+            if (wing.texture == NULL)
+            {
+                return 0;
+            }
+            SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
+        }
+    }
+    return 1;
+}
+
+static void wing_texture_upload(const uint32_t *rgba, int w, int h)
+{
+    if (wing.gltex != 0)
+    {
+        glBindTexture(GL_TEXTURE_2D, wing.gltex);
+        Game_GlTexSubImageBgra(w, h, rgba);
+    }
+    else
+    {
+        SDL_UpdateTexture(wing.texture, NULL, rgba, w * 4);
+    }
+}
+
+
 static void wing_create_window(void)
 {
     int w, h;
@@ -148,12 +269,43 @@ static void wing_create_window(void)
         return;
     }
 
+    wing.shader = wing_shader();
     wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                   WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+                                   WING_WIDTH * 2, WING_HEIGHT * 2,
+                                   SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | (wing.shader != 0 ? SDL_WINDOW_OPENGL : 0));
     if (wing.window == NULL)
     {
         fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
         return;
+    }
+
+    if (wing.shader != 0)
+    {
+        wing.glctx = Game_GlCreateContext(wing.window, 1);
+        if (wing.glctx != NULL)
+        {
+            glGenTextures(1, &wing.gltex);
+            glBindTexture(GL_TEXTURE_2D, wing.gltex);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            wing.gl_width = WING_WIDTH;
+            wing.gl_height = WING_HEIGHT;
+            Game_GlTexImageBgra(0, wing.gl_width, wing.gl_height, NULL);
+            Game_ShowWindow(wing.window);
+            fprintf(stderr, "wing: the picture filter: %s\n", Game_GlShaderName(wing.shader));
+            return;
+        }
+        /* no OpenGL: the plain picture in a window of its own */
+        fprintf(stderr, "wing: Display_Shader needs OpenGL, the plain picture\n");
+        SDL_DestroyWindow(wing.window);
+        wing.shader = 0;
+        wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                       WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+        if (wing.window == NULL)
+        {
+            fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
+            return;
+        }
     }
 
     wing.renderer = SDL_CreateRenderer(wing.window, -1, SDL_RENDERER_ACCELERATED);
@@ -189,6 +341,12 @@ static void wing_present(void)
 {
     SDL_Rect picture;
     int w, h;
+
+    if (wing.gltex != 0)
+    {
+        Game_GlPresentFiltered(wing.window, wing.gltex, wing.gl_width, wing.gl_height, 1, 0, wing.shader);
+        return;
+    }
 
     if (SDL_GetRendererOutputSize(wing.renderer, &w, &h) != 0)
     {
@@ -241,7 +399,7 @@ void Wing_ShowFrame(void)
     uint32_t *rgba;
     int i, n;
 
-    if (wing.pixels == NULL || wing.texture == NULL)
+    if (wing.pixels == NULL || !wing_has_texture())
     {
         return;
     }
@@ -260,7 +418,7 @@ void Wing_ShowFrame(void)
                   ((uint32_t)wing.palette[c][1] << 8) | (uint32_t)wing.palette[c][2];
     }
 
-    SDL_UpdateTexture(wing.texture, NULL, rgba, wing.width * 4);
+    wing_texture_upload(rgba, wing.width, wing.height);
     free(rgba);
 
     wing_present();
@@ -433,7 +591,7 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
         return 0;
     }
 
-    if (wing.texture == NULL)
+    if (!wing_has_texture())
     {
         return 0;
     }
@@ -479,19 +637,11 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
          * the window (whatever size the window has). */
         {
             uint32_t *rgba;
-            int n, tw = 0, th = 0;
+            int n;
 
-            SDL_QueryTexture(wing.texture, NULL, NULL, &tw, &th);
-            if (tw != sw || th != sh)
+            if (!wing_texture_size(sw, sh))
             {
-                SDL_DestroyTexture(wing.texture);
-                wing.texture = SDL_CreateTexture(wing.renderer, SDL_PIXELFORMAT_ARGB8888,
-                                                 SDL_TEXTUREACCESS_STREAMING, sw, sh);
-                if (wing.texture == NULL)
-                {
-                    return 0;
-                }
-                SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
+                return 0;
             }
 
             n = sw * sh;
@@ -515,7 +665,7 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
                 }
             }
 
-            SDL_UpdateTexture(wing.texture, NULL, rgba, sw * 4);
+            wing_texture_upload(rgba, sw, sh);
             free(rgba);
         }
     }
