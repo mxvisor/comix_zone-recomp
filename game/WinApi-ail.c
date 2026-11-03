@@ -41,10 +41,7 @@
 #include "Game_midi.h"
 #include "Game_sound.h"
 #include "Game_vfs.h"
-
-
-extern uint64_t pointer_offset;
-#define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
+#include "Game_memory.h"
 
 #ifdef __cplusplus
 extern "C" {

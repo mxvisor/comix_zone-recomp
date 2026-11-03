@@ -43,12 +43,6 @@
 #include "WinApi-wing.h"
 #include "touchgamepad.h"
 
-/* the guest's addresses are 32 bit; on a 64 bit host they are offsets into the
- * guest's memory */
-extern uint64_t pointer_offset;
-#define GUEST_MEM(a) ((void *)(uintptr_t)((a) ? ((uint64_t)(a) + pointer_offset) : 0))
-#define GUEST_ADDR(p) ((uint32_t)((uintptr_t)(p) - pointer_offset))
-
 #define WING_LOG(...) do { if (wing_log) fprintf(stderr, "wing: " __VA_ARGS__); } while (0)
 
 static int wing_log = 0; /* $CZ_WING_LOG: every call of the layer to stderr */
