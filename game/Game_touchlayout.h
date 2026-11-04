@@ -31,7 +31,7 @@ static void gp_layout(int W, int H)
 {
     int bar = (W > H * 4 / 3) ? (W - H * 4 / 3) / 2 : 0;
     int S = bar * 2 / 7;
-    int gap, m, small, x, y, i;
+    int gap, m, small, pw, aw, ah, x, y, i;
 
     /* the D-pad is 3.5 cells wide with its margins and must fit the bar; only a
      * screen without bars (4:3 or narrower) gets the buttons over the picture */
@@ -41,24 +41,28 @@ static void gp_layout(int W, int H)
     gap = S / 8;
     m = S / 4;
     small = S * 2 / 3;
+    pw = 3 * S + 2 * gap;
 
     /* the D-pad at the bottom left */
     x = m;
-    y = H - m - (3 * S + 2 * gap);
+    y = H - m - pw;
     gp_place(0, x + S + gap, y, S, S);
     gp_place(1, x + S + gap, y + 2 * (S + gap), S, S);
     gp_place(2, x, y + S + gap, S, S);
     gp_place(3, x + 2 * (S + gap), y + S + gap, S, S);
 
-    /* the actions at the bottom right, the items above them */
-    x = W - m - (2 * S + gap);
-    y = H - m - S;
-    gp_place(4, x, y, S, S);
-    gp_place(5, x + S + gap, y, S, S);
+    /* the actions at the bottom right, the items above them: the block is as wide
+     * as the D-pad, so it fills the right bar as the D-pad fills the left one */
+    x = W - m - pw;
+    aw = (pw - gap) / 2;
+    ah = S * 3 / 2;
+    y = H - m - ah;
+    gp_place(4, x, y, aw, ah);
+    gp_place(5, x + aw + gap, y, aw, ah);
     y -= gap + small;
     for (i = 0; i < 3; i++)
     {
-        gp_place(6 + i, x + i * ((2 * S + gap - small) / 2), y, small, small);
+        gp_place(6 + i, x + i * (S + gap), y, S, small);
     }
 
     /* the commands in the top corners, away from the thumbs */
