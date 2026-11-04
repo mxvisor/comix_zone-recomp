@@ -42,7 +42,8 @@
 #include "Game_thread.h"
 #include "WinApi.h"
 #include "WinApi-wing.h"
-#include "touchgamepad.h"
+#include "Game_ui.h"
+#include "WinApi-ui.h"
 #include "Game_gl.h"
 #include "Game_vars.h"
 
@@ -246,6 +247,7 @@ static void wing_texture_upload(const uint32_t *rgba, int w, int h)
     }
 }
 
+static void wing_present(void);
 
 static void wing_create_window(void)
 {
@@ -278,6 +280,8 @@ static void wing_create_window(void)
         fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
         return;
     }
+    /* the window menu holds the game while it is open and shows the picture again */
+    Game_UiSetRepaint(wing_present);
 
     if (wing.shader != 0)
     {
@@ -361,7 +365,7 @@ static void wing_present(void)
     SDL_SetRenderDrawColor(wing.renderer, 0, 0, 0, 255);
     SDL_RenderClear(wing.renderer);
     SDL_RenderCopy(wing.renderer, wing.texture, NULL, &picture);
-    TouchGamepad_Draw(wing.renderer);
+    Game_UiDraw(wing.renderer);
     SDL_RenderPresent(wing.renderer);
 }
 
@@ -995,9 +999,14 @@ uint32_t CCALL FindWindowA_c(uint32_t classname, uint32_t windowname)
 
 /* --- the messages --- */
 
-/* the game sends its picture to the window as a WM_COPYDATA message */
+/* the game sends its picture to the window as a WM_COPYDATA message, and fills
+ * the lists of its dialogs */
 uint32_t CCALL SendMessageA_c(uint32_t hwnd, uint32_t msg, uint32_t wparam, uint32_t lparam)
 {
+    uint32_t result;
+
+    /* the lists of the settings dialogs (WinApi-dialog.c) */
+    if (Winapi_DialogMessage(hwnd, msg, wparam, lparam, &result)) return result;
     WING_LOG("SendMessageA(%08x, %08x, %08x, %08x)\n", hwnd, msg, wparam, lparam);
 
     if (msg == 0x4a) /* WM_COPYDATA */

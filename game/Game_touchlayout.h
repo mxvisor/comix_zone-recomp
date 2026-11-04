@@ -1,9 +1,10 @@
 /* The on-screen gamepad (see touchgamepad.c).  The keys are the game's
  * defaults, the data at 0x431860 of COMIX.EXE: the arrows, Z jump, X action,
  * 1-3 the items; F2 is a new game and F3 the pause (its window procedure,
- * WM_KEYDOWN).  The buttons sit in the black bars beside the 4:3 picture. */
+ * WM_KEYDOWN); F10 opens the window menu (WinApi-menubar.c).  The buttons sit
+ * in the black bars beside the 4:3 picture. */
 
-#define GP_NBUTTONS 11
+#define GP_NBUTTONS 12
 
 static GPButton gp_buttons[GP_NBUTTONS] = {
     {0,0,0,0, SDLK_UP,    1, NULL,    GP_LIGHT,  -1},
@@ -17,6 +18,7 @@ static GPButton gp_buttons[GP_NBUTTONS] = {
     {0,0,0,0, SDLK_3,     0, "3",     GP_ORANGE, -1},
     {0,0,0,0, SDLK_F2,    0, "NEW",   GP_GREY,   -1},
     {0,0,0,0, SDLK_F3,    0, "PAUSE", GP_GREY,   -1},
+    {0,0,0,0, SDLK_F10,   0, "MENU",  GP_GREY,   -1},
 };
 
 static void gp_place(int index, int x, int y, int w, int h)
@@ -68,4 +70,5 @@ static void gp_layout(int W, int H)
     /* the commands in the top corners, away from the thumbs */
     gp_place(9, m, m, S, small);
     gp_place(10, W - m - S, m, S, small);
+    gp_place(11, m + S + gap, m, S, small);
 }
