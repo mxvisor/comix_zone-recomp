@@ -50,6 +50,13 @@ void Comix_Start(void);
  * DestroyWindow and WM_DESTROY with PostQuitMessage; after its message loop
  * the game writes COMIX.INI. */
 #define GAME_WINAPI_DESTROY_MESSAGE 1
+/* the close button of the window: WM_CLOSE, as Exit of the menu (the original
+ * gets it from DefWindowProc's SC_CLOSE), so COMIX.INI is written then too */
+#ifdef __cplusplus
+extern "C"
+#endif
+int Winapi_CloseRequest(void);
+#define GAME_CLOSE_REQUEST() Winapi_CloseRequest()
 
 /* Display_Shader_Key of the settings file: the key that goes through the filters of the picture
  * (WinApi-wing.c); the game does not see it */
