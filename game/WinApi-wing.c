@@ -43,6 +43,7 @@
 #include "WinApi.h"
 #include "WinApi-wing.h"
 #include "Game_ui.h"
+#include "Game_osd.h"
 #include "WinApi-ui.h"
 #include "Game_gl.h"
 #include "Game_vars.h"
@@ -143,41 +144,38 @@ static SDL_Scancode wing_shader_key = SDL_SCANCODE_F9;
 
 int Wing_ConfigKey(const char *key, const char *value)
 {
-    SDL_Scancode sc;
-
     if (strcasecmp(key, "Display_Shader_Key") != 0)
     {
         return 0;
     }
-    if (strcasecmp(value, "off") == 0)
-    {
-        wing_shader_key = SDL_SCANCODE_UNKNOWN;
-        return 1;
-    }
-    sc = SDL_GetScancodeFromName(value);
-    if (sc == SDL_SCANCODE_UNKNOWN)
+    if (!Game_OsdParseKey(value, &wing_shader_key))
     {
         fprintf(stderr, "wing: unknown Display_Shader_Key: %s\n", value);
-    }
-    else
-    {
-        wing_shader_key = sc;
     }
     return 1;
 }
 
-int Wing_KeyFilter(const SDL_KeyboardEvent *key)
+static int shader_key_active(void)
 {
-    if (wing.gltex == 0 || wing_shader_key == SDL_SCANCODE_UNKNOWN || key->keysym.scancode != wing_shader_key)
-    {
-        return 0;
-    }
-    if (key->type == SDL_KEYDOWN && !key->repeat)
-    {
-        wing.shader = (wing.shader + 1) % GAME_GL_SHADERS;
-        fprintf(stderr, "wing: the picture filter: %s\n", Game_GlShaderName(wing.shader));
-    }
-    return 1;
+    return wing.gltex != 0;
+}
+
+static void shader_key_press(void)
+{
+    wing.shader = (wing.shader + 1) % GAME_GL_SHADERS;
+}
+
+static const char *shader_key_state(void)
+{
+    return Game_GlShaderName(wing.shader);
+}
+
+static const Game_OsdKey shader_key = { "Filter", shader_key_active, shader_key_press, shader_key_state };
+
+/* GAME_OSD_KEYS: the key of the filters, in the port's display (Game_osd.h) */
+void Wing_OsdKeys(void)
+{
+    Game_OsdAddKey(wing_shader_key, &shader_key);
 }
 
 
@@ -348,6 +346,7 @@ static void wing_present(void)
 
     if (wing.gltex != 0)
     {
+        Game_OsdFrame(wing.gl_width, wing.gl_height, "OpenGL");
         Game_GlPresentFiltered(wing.window, wing.gltex, wing.gl_width, wing.gl_height, 1, 0, wing.shader);
         return;
     }
@@ -362,6 +361,7 @@ static void wing_present(void)
     picture.x = (w - picture.w) / 2;
     picture.y = (h - picture.h) / 2;
 
+    Game_OsdFrame(wing.width, wing.height, "SDL");
     SDL_SetRenderDrawColor(wing.renderer, 0, 0, 0, 255);
     SDL_RenderClear(wing.renderer);
     SDL_RenderCopy(wing.renderer, wing.texture, NULL, &picture);

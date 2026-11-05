@@ -66,11 +66,10 @@ extern "C"
 int Wing_ConfigKey(const char *key, const char *value);
 #define GAME_CONFIG_KEY(key, value) Wing_ConfigKey(key, value)
 
-struct SDL_KeyboardEvent;
 #ifdef __cplusplus
 extern "C"
 #endif
-int Wing_KeyFilter(const struct SDL_KeyboardEvent *key);
-#define GAME_KEY_FILTER(key) Wing_KeyFilter(key)
+void Wing_OsdKeys(void);
+#define GAME_OSD_KEYS() Wing_OsdKeys()
 
 #endif /* _GAME_HOOKS_H_INCLUDED_ */
