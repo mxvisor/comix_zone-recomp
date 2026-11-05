@@ -105,9 +105,8 @@ typedef struct {
     SDL_Texture *texture;
 
     /* The picture goes through OpenGL (the window has a context in place of the
-     * renderer above, which is left only for a system without OpenGL), with a
-     * filter of Game_gl.h when Display_Shader (a mod) names one: 0 is none */
-    int shader;
+     * renderer above, which is left only for a system without OpenGL), with the
+     * filter of Game_gl.h (Game_GlFilter: Display_Shader, a mod, or the panel's) */
     SDL_GLContext glctx;
     GLuint gltex;
     int gl_width, gl_height;
@@ -138,47 +137,6 @@ typedef struct {
 static wing_state wing;
 
 /* --- the window --- */
-
-/* Display_Shader_Key=<SDL key name>|off (F9 by default): the next filter; it works when the
- * window has OpenGL (not on a system without it) */
-static SDL_Scancode wing_shader_key = SDL_SCANCODE_F9;
-
-int Wing_ConfigKey(const char *key, const char *value)
-{
-    if (strcasecmp(key, "Display_Shader_Key") != 0)
-    {
-        return 0;
-    }
-    if (!Game_OsdParseKey(value, &wing_shader_key))
-    {
-        fprintf(stderr, "wing: unknown Display_Shader_Key: %s\n", value);
-    }
-    return 1;
-}
-
-static int shader_key_active(void)
-{
-    return wing.gltex != 0;
-}
-
-static void shader_key_press(void)
-{
-    wing.shader = (wing.shader + 1) % GAME_GL_SHADERS;
-}
-
-static const char *shader_key_state(void)
-{
-    return Game_GlShaderName(wing.shader);
-}
-
-static const Game_OsdKey shader_key = { "Filter", shader_key_active, shader_key_press, shader_key_state };
-
-/* GAME_OSD_KEYS: the key of the filters, in the port's display (Game_osd.h) */
-void Wing_OsdKeys(void)
-{
-    Game_OsdAddKey(wing_shader_key, &shader_key);
-}
-
 
 /* the picture of the game is there to draw into */
 static int wing_has_texture(void)
@@ -253,7 +211,6 @@ static void wing_create_window(void)
         return;
     }
 
-    wing.shader = Game_GlConfigShader("wing");
     wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                    WING_WIDTH * 2, WING_HEIGHT * 2,
                                    SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL);
@@ -282,7 +239,6 @@ static void wing_create_window(void)
         /* no OpenGL: the plain picture in a window of its own */
         fprintf(stderr, "wing: no OpenGL, the plain picture of an SDL renderer\n");
         SDL_DestroyWindow(wing.window);
-        wing.shader = 0;
         wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                        WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
         if (wing.window == NULL)
@@ -329,7 +285,7 @@ static void wing_present(void)
     if (wing.gltex != 0)
     {
         Game_OsdFrame(wing.gl_width, wing.gl_height, "OpenGL");
-        Game_GlPresentAspect(wing.window, wing.gltex, wing.gl_width, wing.gl_height, 4, 3, 1, 0, wing.shader);
+        Game_GlPresentAspect(wing.window, wing.gltex, wing.gl_width, wing.gl_height, 4, 3, 1, 0, Game_GlFilter());
         return;
     }
 

@@ -58,18 +58,4 @@ extern "C"
 int Winapi_CloseRequest(void);
 #define GAME_CLOSE_REQUEST() Winapi_CloseRequest()
 
-/* Display_Shader_Key of the settings file: the key that goes through the filters of the picture
- * (WinApi-wing.c); the game does not see it */
-#ifdef __cplusplus
-extern "C"
-#endif
-int Wing_ConfigKey(const char *key, const char *value);
-#define GAME_CONFIG_KEY(key, value) Wing_ConfigKey(key, value)
-
-#ifdef __cplusplus
-extern "C"
-#endif
-void Wing_OsdKeys(void);
-#define GAME_OSD_KEYS() Wing_OsdKeys()
-
 #endif /* _GAME_HOOKS_H_INCLUDED_ */
