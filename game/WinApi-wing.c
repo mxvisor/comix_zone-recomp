@@ -211,12 +211,11 @@ static void wing_create_window(void)
         return;
     }
 
-    wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                   WING_WIDTH * 2, WING_HEIGHT * 2,
-                                   SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL);
+    /* the picture's size, 320x240 at 4:3; the player makes it bigger */
+    wing.window = Game_WindowCreate(WING_WIDTH, WING_HEIGHT, SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL);
     if (wing.window == NULL)
     {
-        fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
+        fprintf(stderr, "wing: the window: %s\n", SDL_GetError());
         return;
     }
     /* the window menu holds the game while it is open and shows the picture again */
@@ -239,11 +238,10 @@ static void wing_create_window(void)
         /* no OpenGL: the plain picture in a window of its own */
         fprintf(stderr, "wing: no OpenGL, the plain picture of an SDL renderer\n");
         SDL_DestroyWindow(wing.window);
-        wing.window = SDL_CreateWindow(GAME_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                       WING_WIDTH * 2, WING_HEIGHT * 2, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+        wing.window = Game_WindowCreate(WING_WIDTH, WING_HEIGHT, SDL_WINDOW_HIDDEN);
         if (wing.window == NULL)
         {
-            fprintf(stderr, "wing: SDL_CreateWindow failed: %s\n", SDL_GetError());
+            fprintf(stderr, "wing: the window: %s\n", SDL_GetError());
             return;
         }
     }
