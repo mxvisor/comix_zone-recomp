@@ -1,8 +1,8 @@
 /* The on-screen gamepad (see touchgamepad.c).  The keys are the game's
  * defaults, the data at 0x431860 of COMIX.EXE: the arrows, Z jump, X action,
  * 1-3 the items; F2 is a new game and F3 the pause (its window procedure,
- * WM_KEYDOWN); the window menu (WinApi-menubar.c) is an item of the port's
- * panel, behind the OSD button of every layout.  The buttons sit in the black
+ * WM_KEYDOWN); the window menu (WinApi-menubar.c) opens with a touch in the
+ * strip at the top of the screen, beside NEW and PAUSE.  The buttons sit in the black
  * bars beside the 4:3 picture. */
 
 #define GP_NBUTTONS 11

@@ -109,10 +109,12 @@ typedef struct {
      * filter of Game_gl.h (Game_GlFilter: Display_Shader, a mod, or the panel's) */
     SDL_GLContext glctx;
     GLuint gltex;
-    int gl_width, gl_height;
 
-    uint8_t *pixels;          /* the picture, palette indexed */
-    int width, height;
+    int width, height;        /* the picture in the texture */
+
+    /* the picture comes as the Microsoft Display Device's (WM_COPYDATA): the
+     * game is in its mode "Full Screen" (Esc), and the window is too */
+    int display_device;
 
     /* The picture lives in the memory of the guest: the game draws into it
      * itself (its own software renderer) and hands it over to the system
@@ -149,8 +151,8 @@ static int wing_texture_size(int w, int h)
 {
     if (wing.gltex != 0)
     {
-        wing.gl_width = w;
-        wing.gl_height = h;
+        wing.width = w;
+        wing.height = h;
         glBindTexture(GL_TEXTURE_2D, wing.gltex);
         Game_GlTexImageBgra(0, w, h, NULL);
         return 1;
@@ -171,6 +173,8 @@ static int wing_texture_size(int w, int h)
             SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
         }
     }
+    wing.width = w;
+    wing.height = h;
     return 1;
 }
 
@@ -229,9 +233,9 @@ static void wing_create_window(void)
             glBindTexture(GL_TEXTURE_2D, wing.gltex);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            wing.gl_width = WING_WIDTH;
-            wing.gl_height = WING_HEIGHT;
-            Game_GlTexImageBgra(0, wing.gl_width, wing.gl_height, NULL);
+            wing.width = WING_WIDTH;
+            wing.height = WING_HEIGHT;
+            Game_GlTexImageBgra(0, wing.width, wing.height, NULL);
             Game_ShowWindow(wing.window);
             return;
         }
@@ -282,8 +286,8 @@ static void wing_present(void)
 
     if (wing.gltex != 0)
     {
-        Game_OsdFrame(wing.gl_width, wing.gl_height, "OpenGL");
-        Game_GlPresentAspect(wing.window, wing.gltex, wing.gl_width, wing.gl_height, 4, 3, 1, 0, Game_GlFilter());
+        Game_OsdFrame(wing.width, wing.height, "OpenGL");
+        Game_GlPresentAspect(wing.window, wing.gltex, wing.width, wing.height, 4, 3, 1, 0, Game_GlFilter());
         return;
     }
 
@@ -305,63 +309,40 @@ static void wing_present(void)
     SDL_RenderPresent(wing.renderer);
 }
 
-static void wing_alloc_pixels(int width, int height)
-{
-    if (width <= 0 || height <= 0)
-    {
-        return;
-    }
-
-    if (wing.pixels != NULL && width == wing.width && height == wing.height)
-    {
-        return;
-    }
-
-    free(wing.pixels);
-    wing.pixels = (uint8_t *)malloc((size_t)width * height);
-    if (wing.pixels == NULL)
-    {
-        fprintf(stderr, "wing: out of memory for the picture\n");
-        wing.width = wing.height = 0;
-        return;
-    }
-
-    memset(wing.pixels, 0, (size_t)width * height);
-    wing.width = width;
-    wing.height = height;
-
-    WING_LOG("picture buffer %ix%i\n", width, height);
-}
-
-/* turns the palette-indexed picture into RGBA and shows it */
-void Wing_ShowFrame(void)
+/* shows w x h pixels of a palette-indexed picture with rows of stride bytes */
+static int wing_show(const uint8_t *pixels, int stride, int w, int h)
 {
     uint32_t *rgba;
-    int i, n;
+    int x, y;
 
-    if (wing.pixels == NULL || !wing_has_texture())
+    if (!wing_has_texture() || !wing_texture_size(w, h))
     {
-        return;
+        return 0;
     }
 
-    n = wing.width * wing.height;
-    rgba = (uint32_t *)malloc((size_t)n * 4);
+    rgba = (uint32_t *)malloc((size_t)w * h * 4);
     if (rgba == NULL)
     {
-        return;
+        return 0;
     }
 
-    for (i = 0; i < n; i++)
+    for (y = 0; y < h; y++)
     {
-        uint8_t c = wing.pixels[i];
-        rgba[i] = ((uint32_t)wing.palette[c][3] << 24) | ((uint32_t)wing.palette[c][0] << 16) |
-                  ((uint32_t)wing.palette[c][1] << 8) | (uint32_t)wing.palette[c][2];
+        const uint8_t *row = pixels + (size_t)y * stride;
+        for (x = 0; x < w; x++)
+        {
+            uint8_t c = row[x];
+
+            rgba[y * w + x] = ((uint32_t)wing.palette[c][3] << 24) | ((uint32_t)wing.palette[c][0] << 16) |
+                              ((uint32_t)wing.palette[c][1] << 8) | (uint32_t)wing.palette[c][2];
+        }
     }
 
-    wing_texture_upload(rgba, wing.width, wing.height);
+    wing_texture_upload(rgba, w, h);
     free(rgba);
 
     wing_present();
+    return 1;
 }
 
 #ifdef __cplusplus
@@ -440,10 +421,6 @@ uint32_t CCALL WinGCreateBitmap_c(uint32_t dc, uint32_t pbmi, uint32_t pcolors)
         bmi.biHeight = -bmi.biHeight;
     }
 
-    /* The picture of the game is 320x240 with 8 bits per pixel; the game
-     * fills in the format it got from WinGRecommendDIBFormat, so the size
-     * of the buffer is the size of the screen. */
-    wing_alloc_pixels(WING_WIDTH, WING_HEIGHT);
     wing.bitmap_created = 1;
 
     /* The picture itself is drawn by the game, into the memory of the
@@ -521,98 +498,40 @@ uint32_t CCALL WinGStretchBlt_c(uint32_t dest, uint32_t xdest, uint32_t ydest,
                                 uint32_t wdest, uint32_t hdest, uint32_t src,
                                 uint32_t xsrc, uint32_t ysrc, uint32_t wsrc, uint32_t hsrc)
 {
-    int dw, dh, sw, sh, x, y;
+    const uint8_t *src_pixels;
+    int sw, sh;
 
     WING_LOG("WinGStretchBlt(%08x, %i, %i, %i, %i, %08x, %i, %i, %i, %i)\n",
              dest, xdest, ydest, wdest, hdest, src, xsrc, ysrc, wsrc, hsrc);
+    (void)dest; (void)xdest; (void)ydest; (void)wdest; (void)hdest; (void)src;
 
-    if (wing.pixels == NULL)
+    /* the game is back in its window from the mode "Full Screen" (Esc) */
+    if (wing.display_device)
     {
-        return 0;
-    }
-
-    if (!wing_has_texture())
-    {
-        return 0;
-    }
-
-    /* the picture of the game is the source of the blit */
-    sw = (wsrc != 0) ? (int)wsrc : wing.width;
-    sh = (hsrc != 0) ? (int)hsrc : wing.height;
-    dw = (wdest != 0) ? (int)wdest : wing.width;
-    dh = (hdest != 0) ? (int)hdest : wing.height;
-
-    if (sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0)
-    {
-        return 0;
+        wing.display_device = 0;
+        Game_WindowSetFullscreen(0);
     }
 
     /* the picture the game has drawn is in the memory of the guest */
+    src_pixels = (wing.guest_bits != 0) ? (const uint8_t *)GUEST_MEM(wing.guest_bits) : NULL;
+    if (src_pixels == NULL)
     {
-        const uint8_t *src_pixels = wing.pixels;
-        int src_width = wing.width;
-        int src_height = wing.height;
-
-        if (wing.guest_bits != 0)
-        {
-            src_pixels = (const uint8_t *)GUEST_MEM(wing.guest_bits);
-            src_width = wing.guest_width;
-            src_height = wing.guest_height;
-        }
-
-        if (src_pixels == NULL)
-        {
-            return 0;
-        }
-
-        if (src_width < (int)xsrc + sw) sw = src_width - (int)xsrc;
-        if (src_height < (int)ysrc + sh) sh = src_height - (int)ysrc;
-        if (sw <= 0 || sh <= 0)
-        {
-            return 0;
-        }
-
-        /* The game stretches the picture to the size of its window; the port
-         * keeps the picture at its own size and the renderer scales it into
-         * the window (whatever size the window has). */
-        {
-            uint32_t *rgba;
-            int n;
-
-            if (!wing_texture_size(sw, sh))
-            {
-                return 0;
-            }
-
-            n = sw * sh;
-            rgba = (uint32_t *)malloc((size_t)n * 4);
-            if (rgba == NULL)
-            {
-                return 0;
-            }
-
-            for (y = 0; y < sh; y++)
-            {
-                const uint8_t *row = src_pixels + (ysrc + y) * src_width + xsrc;
-                for (x = 0; x < sw; x++)
-                {
-                    uint8_t c = row[x];
-
-                    rgba[y * sw + x] = ((uint32_t)wing.palette[c][3] << 24) |
-                                       ((uint32_t)wing.palette[c][0] << 16) |
-                                       ((uint32_t)wing.palette[c][1] << 8) |
-                                       (uint32_t)wing.palette[c][2];
-                }
-            }
-
-            wing_texture_upload(rgba, sw, sh);
-            free(rgba);
-        }
+        return 0;
     }
 
-    wing_present();
+    sw = (wsrc != 0) ? (int)wsrc : wing.guest_width;
+    sh = (hsrc != 0) ? (int)hsrc : wing.guest_height;
+    if (wing.guest_width < (int)xsrc + sw) sw = wing.guest_width - (int)xsrc;
+    if (wing.guest_height < (int)ysrc + sh) sh = wing.guest_height - (int)ysrc;
+    if (sw <= 0 || sh <= 0)
+    {
+        return 0;
+    }
 
-    return 1;
+    /* The game stretches the picture to the size of its window; the port
+     * keeps the picture at its own size and scales it into the window
+     * (whatever size the window has). */
+    return wing_show(src_pixels + (size_t)ysrc * wing.guest_width + xsrc, wing.guest_width, sw, sh);
 }
 
 /* --- the device context and the window --- */
@@ -812,8 +731,7 @@ uint32_t CCALL AnimatePalette_c(uint32_t hpal, uint32_t start, uint32_t count, u
     }
 
     /* No frame is shown here: the game sets this palette in every repaint,
-     * before WinGStretchBlt, and the buffer of Wing_ShowFrame is not the
-     * picture of the game (a black frame between every two real ones). */
+     * before it hands the picture over */
     return 1;
 }
 
@@ -905,9 +823,11 @@ uint32_t CCALL GetDeviceCaps_c(uint32_t hdc, uint32_t index)
 
 /* --- the modules the game loads --- */
 
-/* The game loads the Microsoft Display Device, the program that shows an
- * 8bpp picture in a window of its own.  The port shows the picture with
- * WinG, so there is no such module: the game falls back to the WinG path. */
+/* The game loads the Microsoft Display Device (DISPDIB.DLL), which shows an
+ * 8bpp picture on the whole screen in a window of its own, for its mode "Full
+ * Screen" (Esc).  There is no such module and no such window: the game sends
+ * that mode's picture all the same (WM_COPYDATA, SendMessageA_c), and the
+ * port shows it in its own window, on the whole screen. */
 uint32_t CCALL LoadModule_c(uint32_t modulename, uint32_t phmodule)
 {
     uint32_t *out = (uint32_t *)GUEST_MEM(phmodule);
@@ -935,8 +855,8 @@ uint32_t CCALL FindWindowA_c(uint32_t classname, uint32_t windowname)
 
 /* --- the messages --- */
 
-/* the game sends its picture to the window as a WM_COPYDATA message, and fills
- * the lists of its dialogs */
+/* the game sends the picture of its mode "Full Screen" to the window of the
+ * display device as a WM_COPYDATA message, and fills the lists of its dialogs */
 uint32_t CCALL SendMessageA_c(uint32_t hwnd, uint32_t msg, uint32_t wparam, uint32_t lparam)
 {
     uint32_t result;
@@ -955,12 +875,6 @@ uint32_t CCALL SendMessageA_c(uint32_t hwnd, uint32_t msg, uint32_t wparam, uint
         }
 
         WING_LOG("WM_COPYDATA: data %08x, %i bytes, ptr %08x\n", cd->dwData, cd->cbData, cd->lpData);
-
-        /* The game sends the message to its own window (the window of the
-         * class COMIXZONE it has made) and its window procedure draws the
-         * picture.  The port has no such window, so the message is passed
-         * to the window procedure of the game here. */
-        Winapi_CallWndProc(hwnd, msg, wparam, lparam);
 
         if (cd->dwData == 0x400)
         {
@@ -994,22 +908,19 @@ uint32_t CCALL SendMessageA_c(uint32_t hwnd, uint32_t msg, uint32_t wparam, uint
         }
         else if (cd->dwData == 0x401)
         {
-            /* the picture itself */
+            /* the picture itself: 320x240, the game's 320x224 at the top and
+             * black under it; shown as the WinG path shows it */
             const uint8_t *src = (const uint8_t *)GUEST_MEM(cd->lpData);
 
-            if (src != NULL && wing.pixels != NULL)
+            if (src != NULL && cd->cbData >= WING_WIDTH * 224)
             {
-                uint32_t n = cd->cbData;
-
-                if (n > (uint32_t)(wing.width * wing.height))
+                /* the game has gone to its mode "Full Screen" (Esc) */
+                if (!wing.display_device)
                 {
-                    n = (uint32_t)(wing.width * wing.height);
+                    wing.display_device = 1;
+                    Game_WindowSetFullscreen(1);
                 }
-                memcpy(wing.pixels, src, n);
-
-                /* the game sends the picture to the display device, the port
-                 * shows it in its own window */
-                Wing_ShowFrame();
+                wing_show(src, WING_WIDTH, WING_WIDTH, 224);
             }
         }
 
@@ -1020,9 +931,8 @@ uint32_t CCALL SendMessageA_c(uint32_t hwnd, uint32_t msg, uint32_t wparam, uint
 }
 
 
-/* The picture of the game reaches the window in WinGStretchBlt (the WinG
- * path of the game); the buffer of the display-device path (0x62a174) has a
- * stride of its own and is not shown. */
+/* The picture of the game reaches the window in WinGStretchBlt (the window)
+ * and in WM_COPYDATA (the mode "Full Screen"): nothing to do once per tick. */
 void Game_Wing_Tick(void)
 {
 }

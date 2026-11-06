@@ -58,9 +58,6 @@ extern "C" {
 #define WING_WIDTH  320
 #define WING_HEIGHT 240
 
-/* shows the picture the game has sent (the WM_COPYDATA way) */
-void Wing_ShowFrame(void);
-
 #ifdef __cplusplus
 }
 #endif
