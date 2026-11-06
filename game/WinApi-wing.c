@@ -101,12 +101,9 @@ typedef struct {
 
 typedef struct {
     SDL_Window *window;
-    SDL_Renderer *renderer;
-    SDL_Texture *texture;
 
-    /* The picture goes through OpenGL (the window has a context in place of the
-     * renderer above, which is left only for a system without OpenGL), with the
-     * filter of Game_gl.h (Game_GlFilter: Display_Shader, a mod, or the panel's) */
+    /* The picture goes through OpenGL, with the filter of Game_gl.h
+     * (Game_GlFilter: Display_Shader, a mod, or the panel's) */
     SDL_GLContext glctx;
     GLuint gltex;
 
@@ -143,52 +140,23 @@ static wing_state wing;
 /* the picture of the game is there to draw into */
 static int wing_has_texture(void)
 {
-    return wing.texture != NULL || wing.gltex != 0;
+    return wing.gltex != 0;
 }
 
 /* the picture at this size (a mode change of the game) */
 static int wing_texture_size(int w, int h)
 {
-    if (wing.gltex != 0)
-    {
-        wing.width = w;
-        wing.height = h;
-        glBindTexture(GL_TEXTURE_2D, wing.gltex);
-        Game_GlTexImageBgra(0, w, h, NULL);
-        return 1;
-    }
-    {
-        int tw = 0, th = 0;
-
-        SDL_QueryTexture(wing.texture, NULL, NULL, &tw, &th);
-        if (tw != w || th != h)
-        {
-            SDL_DestroyTexture(wing.texture);
-            wing.texture = SDL_CreateTexture(wing.renderer, SDL_PIXELFORMAT_ARGB8888,
-                                             SDL_TEXTUREACCESS_STREAMING, w, h);
-            if (wing.texture == NULL)
-            {
-                return 0;
-            }
-            SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
-        }
-    }
     wing.width = w;
     wing.height = h;
+    glBindTexture(GL_TEXTURE_2D, wing.gltex);
+    Game_GlTexImageBgra(0, w, h, NULL);
     return 1;
 }
 
 static void wing_texture_upload(const uint32_t *rgba, int w, int h)
 {
-    if (wing.gltex != 0)
-    {
-        glBindTexture(GL_TEXTURE_2D, wing.gltex);
-        Game_GlTexSubImageBgra(w, h, rgba);
-    }
-    else
-    {
-        SDL_UpdateTexture(wing.texture, NULL, rgba, w * 4);
-    }
+    glBindTexture(GL_TEXTURE_2D, wing.gltex);
+    Game_GlTexSubImageBgra(w, h, rgba);
 }
 
 static void wing_present(void);
@@ -208,7 +176,7 @@ static void wing_create_window(void)
     }
 
     /* The window of the port stays hidden (Win32 games open their own, as the
-     * DirectDraw layer does), and the thread that draws owns the renderer. */
+     * DirectDraw layer does), and the thread that draws owns the OpenGL. */
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
     {
         fprintf(stderr, "wing: SDL video initialization failed: %s\n", SDL_GetError());
@@ -225,51 +193,15 @@ static void wing_create_window(void)
     /* the window menu holds the game while it is open and shows the picture again */
     Game_UiSetRepaint(wing_present);
 
-    {
-        wing.glctx = Game_GlCreateContext(wing.window, 1);
-        if (wing.glctx != NULL)
-        {
-            glGenTextures(1, &wing.gltex);
-            glBindTexture(GL_TEXTURE_2D, wing.gltex);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            wing.width = WING_WIDTH;
-            wing.height = WING_HEIGHT;
-            Game_GlTexImageBgra(0, wing.width, wing.height, NULL);
-            Game_ShowWindow(wing.window);
-            return;
-        }
-        /* no OpenGL: the plain picture in a window of its own */
-        fprintf(stderr, "wing: no OpenGL, the plain picture of an SDL renderer\n");
-        SDL_DestroyWindow(wing.window);
-        wing.window = Game_WindowCreate(WING_WIDTH, WING_HEIGHT, SDL_WINDOW_HIDDEN);
-        if (wing.window == NULL)
-        {
-            fprintf(stderr, "wing: the window: %s\n", SDL_GetError());
-            return;
-        }
-    }
-
-    wing.renderer = SDL_CreateRenderer(wing.window, -1, SDL_RENDERER_ACCELERATED);
-    if (wing.renderer == NULL)
-    {
-        wing.renderer = SDL_CreateRenderer(wing.window, -1, 0);
-    }
-    if (wing.renderer == NULL)
-    {
-        fprintf(stderr, "wing: SDL_CreateRenderer failed: %s\n", SDL_GetError());
-        return;
-    }
-
-    wing.texture = SDL_CreateTexture(wing.renderer, SDL_PIXELFORMAT_ARGB8888,
-                                     SDL_TEXTUREACCESS_STREAMING, WING_WIDTH, WING_HEIGHT);
-    if (wing.texture == NULL)
-    {
-        fprintf(stderr, "wing: SDL_CreateTexture failed: %s\n", SDL_GetError());
-        return;
-    }
-
-    SDL_SetTextureScaleMode(wing.texture, SDL_ScaleModeNearest);
+    /* without OpenGL it says so and ends the program */
+    wing.glctx = Game_GlCreateContext(wing.window, 1);
+    glGenTextures(1, &wing.gltex);
+    glBindTexture(GL_TEXTURE_2D, wing.gltex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    wing.width = WING_WIDTH;
+    wing.height = WING_HEIGHT;
+    Game_GlTexImageBgra(0, wing.width, wing.height, NULL);
     Game_ShowWindow(wing.window);
 
     /* the picture of the game is 320x240, the window may be bigger */
@@ -281,32 +213,12 @@ static void wing_create_window(void)
  * stretches 320x224 to that too); the rest of the window stays black. */
 static void wing_present(void)
 {
-    SDL_Rect picture;
-    int w, h;
-
-    if (wing.gltex != 0)
-    {
-        Game_OsdFrame(wing.width, wing.height, "OpenGL");
-        Game_GlPresentAspect(wing.window, wing.gltex, wing.width, wing.height, 4, 3, 1, 0, Game_GlFilter());
-        return;
-    }
-
-    if (SDL_GetRendererOutputSize(wing.renderer, &w, &h) != 0)
+    if (wing.gltex == 0)
     {
         return;
     }
-
-    picture.w = (w * 3 > h * 4) ? h * 4 / 3 : w;
-    picture.h = (w * 3 > h * 4) ? h : w * 3 / 4;
-    picture.x = (w - picture.w) / 2;
-    picture.y = (h - picture.h) / 2;
-
-    Game_OsdFrame(wing.width, wing.height, "SDL");
-    SDL_SetRenderDrawColor(wing.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(wing.renderer);
-    SDL_RenderCopy(wing.renderer, wing.texture, NULL, &picture);
-    Game_UiDraw(wing.renderer);
-    SDL_RenderPresent(wing.renderer);
+    Game_OsdFrame(wing.width, wing.height, "OpenGL");
+    Game_GlPresentAspect(wing.window, wing.gltex, wing.width, wing.height, 4, 3, 1, 0, Game_GlFilter());
 }
 
 /* shows w x h pixels of a palette-indexed picture with rows of stride bytes */
