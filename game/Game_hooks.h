@@ -7,13 +7,6 @@
 /* the original's file name (argv[0] of the guest) */
 #define GAME_MAIN_FILENAME "COMIX.EXE"
 
-/* the report of a crash (game/main.c) */
-#ifdef __cplusplus
-extern "C"
-#endif
-void Comix_Start(void);
-#define GAME_WIN_START() Comix_Start()
-
 /* the game's name in the port's messages */
 #define GAME_NAME "comix zone"
 /* the game plays its music by MIDI and needs no disc: no "no CD" message */
