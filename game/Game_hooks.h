@@ -46,6 +46,11 @@ void Comix_Start(void);
  * dialogs of the EXE: the port shows them over the picture (WinApi-dialog.c). */
 #define GAME_WINAPI_DIALOGS 1
 
+/* Esc of the window procedure checks Mode > Full Screen or Window in
+ * GetMenu(hwnd) of its WM_KEYDOWN: the input messages carry the window (the
+ * game posts nothing of the WM_USER range) */
+#define GAME_WINAPI_WINDOW_MESSAGES 1
+
 /* Game > Exit of the menu: the window procedure answers WM_CLOSE with
  * DestroyWindow and WM_DESTROY with PostQuitMessage; after its message loop
  * the game writes COMIX.INI. */
