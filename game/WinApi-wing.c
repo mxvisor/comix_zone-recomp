@@ -737,22 +737,10 @@ uint32_t CCALL GetDeviceCaps_c(uint32_t hdc, uint32_t index)
 
 /* The game loads the Microsoft Display Device (DISPDIB.DLL), which shows an
  * 8bpp picture on the whole screen in a window of its own, for its mode "Full
- * Screen" (Esc).  There is no such module and no such window: the game sends
- * that mode's picture all the same (WM_COPYDATA, SendMessageA_c), and the
- * port shows it in its own window, on the whole screen. */
-uint32_t CCALL LoadModule_c(uint32_t modulename, uint32_t phmodule)
-{
-    uint32_t *out = (uint32_t *)GUEST_MEM(phmodule);
-
-    WING_LOG("LoadModule(%08x)\n", modulename);
-
-    if (out != NULL)
-    {
-        *out = 0;
-    }
-
-    return 0;
-}
+ * Screen" (Esc).  There is no such module (LoadModule of the SDK fails) and
+ * no such window: the game sends that mode's picture all the same
+ * (WM_COPYDATA, SendMessageA_c), and the port shows it in its own window, on
+ * the whole screen. */
 
 /* The game looks for a window of its own class name: there is none, so the
  * game keeps going with the display device it has got. */
