@@ -34,9 +34,10 @@ No game data is included. The build and the game need your own copy of the game'
 - **WinG** (`game/WinApi-wing.c`): the game's device context and its palette-indexed
   bitmap are the port's own; the picture goes to an SDL window, through OpenGL when a
   filter is chosen.
-- **Miles** (`game/WinApi-ail.c`): the sample handles play through SDL_mixer. The XMIDI
-  music is turned into MIDI and played by SR-SDK's synthesizer (TinySoundFont) with a
-  General MIDI bank, `game/install/soundfont.sf2` (a trimmed FluidR3_GM).
+- **Miles** (SR-SDK's `WinApi-wail32.c`, `GAME_WINAPI_WAIL32`): the sample handles play
+  through SDL_mixer. The XMIDI music is turned into MIDI and played by SR-SDK's
+  synthesizer (TinySoundFont) with a General MIDI bank, `game/install/soundfont.sf2`
+  (a trimmed FluidR3_GM).
 
 ## What works
 

@@ -39,6 +39,10 @@
  * dialogs of the EXE: the port shows them over the picture (WinApi-dialog.c). */
 #define GAME_WINAPI_DIALOGS 1
 
+/* The sound: the Miles Sound System (WAIL32.dll), samples and XMIDI music
+ * (WinApi-wail32.c); the music needs soundfont.sf2 in the game directory. */
+#define GAME_WINAPI_WAIL32 1
+
 /* Esc of the window procedure checks Mode > Full Screen or Window in
  * GetMenu(hwnd) of its WM_KEYDOWN: the input messages carry the window (the
  * game posts nothing of the WM_USER range) */
