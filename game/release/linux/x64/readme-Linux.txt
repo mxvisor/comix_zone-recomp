@@ -10,10 +10,11 @@ The port is not finished: expect bugs.
 Libraries
 ---------
 
-The game requires following 64-bit libraries: SDL2, SDL2_mixer
-On debian based distributions these libraries are in following packages: libsdl2-2.0-0 libsdl2-mixer-2.0-0
+The game needs the 64-bit library SDL2 (on debian based distributions the
+package libsdl2-2.0-0). SDL2_mixer is in the archive, beside the program
+(libSDL2_mixer-2.0.so.0); the program takes it before the system's.
 
-The binary needs glibc 2.38 or newer.
+The binary needs glibc @GLIBC_MAX@ or newer.
 
 
 Running
@@ -35,7 +36,7 @@ then reads its own files from there first.
 Configuration
 -------------
 
-The port's settings are in ComixZone.cfg in the game's directory; the file
+The port's settings are in comix-zone.cfg in the game's directory; the file
 describes them. Another file can be given with --config-file=FILE. Without
 the file the game plays with sound and music.
 
