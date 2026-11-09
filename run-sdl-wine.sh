@@ -7,7 +7,7 @@ source "$GAME_REPO/SR-SDK/tools/run_common.sh"
 
 PROG=comix-zone
 ENVP=CZ
-DATA_DEFAULT="$GAME_REPO/build/disc"     # make disc: the image with game/portable.cfg over it
+DATA_DEFAULT="$GAME_REPO/build/disc"     # make disc: the image with game/distrib.cfg over it
 DATA_MARKER=COMIX.EXE                   # a file the data directory must hold
 CD_DEFAULT="$GAME_REPO/../iso/CD/Comix.cue"
 WINE_NAME=dos-recomp-wine

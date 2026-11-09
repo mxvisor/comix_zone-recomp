@@ -67,7 +67,7 @@ MinGW-w64 for Windows; the Android SDK and NDK for Android (see
 [SR-SDK's README](SR-SDK/README.md#requirements)).
 
 The recompiler reads `COMIX.EXE` from the CD, so the image is needed for the build as well.
-Put it where `image=` of [`game/portable.cfg`](game/portable.cfg) points, beside the
+Put it where `image=` of [`game/distrib.cfg`](game/distrib.cfg) points, beside the
 repository: `../iso/Comix.bin` (with its `Comix.cue`). The build checks the executable
 against the SHA-256 in `game/recomp/`.
 
