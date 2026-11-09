@@ -74,7 +74,7 @@ against the SHA-256 in `game/recomp/`.
 ```sh
 git clone --recursive <this repository>
 cd comix_zone-recomp
-make linux      # build/bin/pc64-linux/comix-zone
+make linux      # build/bin/x64-linux/comix-zone-x64
 make windows    # MinGW-w64 cross build, with the SDL DLLs
 make apk        # Android, arm64
 make distrib    # the release archives, in build/distrib/

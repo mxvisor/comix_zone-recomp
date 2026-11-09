@@ -12,7 +12,7 @@ Libraries
 
 The libraries the game needs are in this archive: SDL2.dll (sdl2-compat,
 which runs on SDL3.dll), SDL3.dll and SDL2_mixer.dll. Keep them beside
-comix-zone.exe.
+comix-zone-x64.exe.
 
 
 Running
@@ -20,7 +20,7 @@ Running
 
 Run the program in the directory the archive was unpacked into:
 
-    comix-zone.exe
+    comix-zone-x64.exe
 
 
 Saved games

@@ -22,7 +22,7 @@ Running
 
 Run the program in the directory the archive was unpacked into:
 
-    ./comix-zone
+    ./comix-zone-x64
 
 
 Saved games
