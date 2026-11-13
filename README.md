@@ -59,7 +59,7 @@ off by default, switched in the panel too.
 | Key | What it does |
 |---|---|
 | `Display_Shader` | a filter of the picture, through OpenGL: `smooth` (sharp bilinear), `pixelart` (Scale2x), `scanlines`, `crt` |
-| `Joystick_Button3` | a third button of the joystick (X of a pad) with the action `[JoyStick] button3` of `COMIX.INI` (Block by default): the game's menu has two buttons only and its keys no Block; also the panel's item "Joystick button 3" |
+| `Additional_Buttons` | Block on a third button of the joystick and on a key: button 3 (X of a pad) has the action `[JoyStick] button3` of `COMIX.INI` (Block by default), set also in the game's Set up Gamepad, and Block has a key, `[Keys] block` (C by default), set also in its Set up Keyboard; the game's own menu gives actions to two buttons only, its keys have no Block, and its Set up Gamepad swaps the names of Block and down (they are right with the mod); also the panel's item "Additional buttons" |
 | `Midi_Effects` | reverb and chorus on the MIDI music, as a General MIDI synthesizer (and fluidsynth) has them: the port's synthesizer has none; also the panel's item "MIDI reverb and chorus" |
 
 ## Building

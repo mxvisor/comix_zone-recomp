@@ -60,7 +60,7 @@ extern "C"
 int Winapi_CloseRequest(void);
 #define GAME_CLOSE_REQUEST() Winapi_CloseRequest()
 
-/* the mod Joystick_Button3 (game/WinApi-game-impl.c) */
+/* the mod Additional_Buttons (game/WinApi-game-impl.c) */
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -71,5 +71,16 @@ extern "C"
 #endif
 void comix_osd_items(void);
 #define GAME_OSD_ITEMS() comix_osd_items()
+/* with the mod, Setup Gamepad has a third list, Button 3 (game/WinApi-game-impl.c) */
+#ifdef __cplusplus
+extern "C" {
+#endif
+void comix_dialog_created(const char *name);
+void comix_dialog_handled(unsigned int hDlg, unsigned int msg, unsigned int wParam, unsigned int lParam);
+#ifdef __cplusplus
+}
+#endif
+#define GAME_WINAPI_DIALOG_CREATED(name) comix_dialog_created(name)
+#define GAME_WINAPI_DIALOG_HANDLED(hDlg, msg, wParam, lParam) comix_dialog_handled(hDlg, msg, wParam, lParam)
 
 #endif /* _GAME_HOOKS_H_INCLUDED_ */
