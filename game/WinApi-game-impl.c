@@ -38,6 +38,7 @@
 #include "WinApi-game.h"
 #include "WinApi-kernel32.h"
 #include "Game_memory.h"
+#include "Game_midi.h"
 #include "Game_osd.h"
 #include "llasm_cpu.h"
 
@@ -106,6 +107,7 @@ static const Game_OsdItem button3_item = { "Joystick button 3", NULL, button3_pr
 void comix_osd_items(void)
 {
     Game_OsdAddItem(&button3_item);
+    Game_MidiAddEffectsItem();
 }
 
 #ifdef __cplusplus

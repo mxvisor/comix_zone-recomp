@@ -60,6 +60,7 @@ off by default, switched in the panel too.
 |---|---|
 | `Display_Shader` | a filter of the picture, through OpenGL: `smooth` (sharp bilinear), `pixelart` (Scale2x), `scanlines`, `crt` |
 | `Joystick_Button3` | a third button of the joystick (X of a pad) with the action `[JoyStick] button3` of `COMIX.INI` (Block by default): the game's menu has two buttons only and its keys no Block; also the panel's item "Joystick button 3" |
+| `Midi_Effects` | reverb and chorus on the MIDI music, as a General MIDI synthesizer (and fluidsynth) has them: the port's synthesizer has none; also the panel's item "MIDI reverb and chorus" |
 
 ## Building
 
