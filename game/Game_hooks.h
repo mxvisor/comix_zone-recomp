@@ -60,4 +60,16 @@ extern "C"
 int Winapi_CloseRequest(void);
 #define GAME_CLOSE_REQUEST() Winapi_CloseRequest()
 
+/* the mod Joystick_Button3 (game/WinApi-game-impl.c) */
+#ifdef __cplusplus
+extern "C"
+#endif
+int Game_ConfigKey(const char *key, const char *value);
+#define GAME_CONFIG_KEY(key, value) Game_ConfigKey(key, value)
+#ifdef __cplusplus
+extern "C"
+#endif
+void comix_osd_items(void);
+#define GAME_OSD_ITEMS() comix_osd_items()
+
 #endif /* _GAME_HOOKS_H_INCLUDED_ */

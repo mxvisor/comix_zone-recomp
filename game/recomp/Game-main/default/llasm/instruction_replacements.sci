@@ -1,0 +1,1 @@
+loc_401CAA,3,;or [ebp-0x1c], eax: the bits of the joystick's buttons; with the mod Joystick_Button3 also of button 3|call comix_joy_buttons $|add tmpadr, ebp, -28|load tmp1, tmpadr, 1|or tmp1, tmp1, eax|store tmp1, tmpadr, 1

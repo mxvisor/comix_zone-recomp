@@ -59,6 +59,7 @@ off by default, switched in the panel too.
 | Key | What it does |
 |---|---|
 | `Display_Shader` | a filter of the picture, through OpenGL: `smooth` (sharp bilinear), `pixelart` (Scale2x), `scanlines`, `crt` |
+| `Joystick_Button3` | a third button of the joystick (X of a pad) with the action `[JoyStick] button3` of `COMIX.INI` (Block by default): the game's menu has two buttons only and its keys no Block; also the panel's item "Joystick button 3" |
 
 ## Building
 

@@ -4,6 +4,9 @@
 ;;  Generated: 2026-11-02
 ;;
 
+; the mod Joystick_Button3 (game/WinApi-game-impl.c)
+funcv comix_joy_buttons $
+
 ; the code at an address of the original program (main.c, guest_address_jumps.sci)
 func x86_resolve_guest_code address
 ; the code at (the address of a code pointer) + offset (main.c, guest_address_jumps.sci)
