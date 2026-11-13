@@ -102,7 +102,7 @@ static const char *button3_state(void)
     return button3_mod ? "on" : "off";
 }
 
-static const Game_OsdItem button3_item = { "Joystick button 3", NULL, button3_press, button3_state, "Joystick_Button3", NULL };
+static const Game_OsdItem button3_item = { "Joystick button 3", NULL, button3_press, button3_state, "Joystick_Button3", NULL, NULL, NULL, NULL };
 
 void comix_osd_items(void)
 {
