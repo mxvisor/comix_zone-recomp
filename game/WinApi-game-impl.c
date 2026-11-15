@@ -57,6 +57,7 @@
 #include "Game_midi.h"
 #include "Game_osd.h"
 #include "llasm_cpu.h"
+#include "touchgamepad.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -89,6 +90,7 @@ int Game_ConfigKey(const char *key, const char *value)
     if (strcasecmp(value, "on") == 0) buttons_mod = 1;
     else if (strcasecmp(value, "off") == 0) buttons_mod = 0;
     else fprintf(stderr, GAME_NAME ": unknown Additional_Buttons: %s\n", value);
+    TouchGamepad_Relayout();
     return 1;
 }
 
@@ -334,6 +336,13 @@ void comix_dialog_handled(unsigned int hDlg, unsigned int msg, unsigned int wPar
 static void buttons_press(void)
 {
     buttons_mod = !buttons_mod;
+    TouchGamepad_Relayout();
+}
+
+/* the on-screen gamepad has BLOCK (game/Game_touchlayout.h) */
+int comix_buttons_mod(void)
+{
+    return buttons_mod;
 }
 
 static const char *buttons_state(void)
