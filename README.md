@@ -36,8 +36,9 @@ No game data is included. The build and the game need your own copy of the game'
   filter is chosen.
 - **Miles** (SR-SDK's `WinApi-wail32.c`, `GAME_WINAPI_WAIL32`): the sample handles play
   through SDL_mixer. The XMIDI music is turned into MIDI and played by SR-SDK's
-  synthesizer (TinySoundFont) with a General MIDI bank, `game/install/soundfont.sf2`
-  (a trimmed FluidR3_GM).
+  synthesizer (TinySoundFont) with a General MIDI bank, `soundfont.sf2` of the game
+  directory: the build cuts FluidR3_GM, installed on its system, to the presets of the
+  game's music (`soundfont=` of `game/distrib.cfg`).
 
 ## What works
 
@@ -65,7 +66,7 @@ off by default, switched in the panel too.
 ## Building
 
 Requirements: Python 3, SCons, GCC or Clang, LLVM's `opt` and `llc`, SDL2 and SDL2_mixer;
-MinGW-w64 for Windows; the Android SDK and NDK for Android (see
+FluidR3_GM, the package `fluid-soundfont-gm` (`soundfont-fluid` on Arch), for the music; MinGW-w64 for Windows; the Android SDK and NDK for Android (see
 [SR-SDK's README](SR-SDK/README.md#requirements)).
 
 The recompiler reads `COMIX.EXE` from the CD, so the image is needed for the build as well.
@@ -101,8 +102,8 @@ A release archive (`make distrib`) holds the program and that game directory; it
 
 The code of this repository is under the MIT license, as its file headers say. SR-SDK
 and SR are under the MIT license as well: see `SR-SDK/LICENSE` and `SR-SDK/NOTICE.md`.
-SR is by Roman Pauer; this port stands on it. The sound bank `game/install/soundfont.sf2`
-is FluidR3_GM by Frank Wen, under the MIT license (`game/install/soundfont.LICENSE`).
+SR is by Roman Pauer; this port stands on it. The sound bank, which the build makes, is
+FluidR3_GM by Frank Wen, under the MIT license (`soundfont.LICENSE` beside it).
 
 *Comix Zone* itself, its executable and its data belong to their owners and are not part
 of this repository.
