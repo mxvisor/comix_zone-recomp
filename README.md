@@ -8,6 +8,8 @@ runtime, [SR-SDK](SR-SDK/README.md), on SDL2.
 
 No game data is included. The build and the game need your own copy of the game's CD.
 
+![The title screen, the first page of the first episode and the game's Options menu](docs/screens.gif)
+
 ## The original
 
 | | |
@@ -21,6 +23,22 @@ No game data is included. The build and the game need your own copy of the game'
 | Sound | the Miles Sound System (`WAIL32.DLL`): digital samples |
 | Music | XMIDI sequences, played by Miles on the MIDI device |
 | Input | keyboard (`GetAsyncKeyState`), joystick; the window menu with its dialogs |
+
+### Why this version
+
+The Windows 95 version is a piece of history of its own, not a copy of the Mega Drive game:
+
+- **The music is MIDI.** The Mega Drive plays its music on its FM sound chip; the PC
+  version has the score as XMIDI sequences, played by Miles on a General MIDI
+  synthesizer: the same tunes, arranged for other instruments.
+- **The sound effects are better samples.** The punches, the voices and the rest of the
+  sounds are digital samples of a higher quality than the cartridge could hold.
+- **WinG.** The game draws through WinG, Microsoft's short-lived API of 1994 for fast
+  graphics on Windows 3.1 and Windows 95, made before DirectX and dropped soon after: few
+  games used it, and today's Windows no longer has it.
+- **Its own title menu.** The title screen has the menu of the game's window: Game
+  (Start, Difficulty), Mode (Full Screen or Window), Options (music, sound effects,
+  Setup Keyboard, Setup Gamepad, the language of the menus) and Help, with its dialogs.
 
 ## How the port works
 
@@ -46,6 +64,8 @@ No game data is included. The build and the game need your own copy of the game'
   `COMIX.INI` as the original does.
 - Linux (x86-64, arm64), Windows (x86-64; it also runs under Wine) and Android (arm64),
   with on-screen buttons and a touch on the top strip for the window menu.
+
+![The first page on an Android phone, with the on-screen buttons and BLOCK of the mod Additional_Buttons](docs/android.jpg)
 - The window menu (Full Screen or Window, the settings dialogs), and Esc switching the
   mode as in the original.
 - The port's panel (F12): the size of the picture, the window or the full screen, the
@@ -57,10 +77,12 @@ No game data is included. The build and the game need your own copy of the game'
 By default the port looks and plays as the original. A mod is a key of `comix-zone.cfg`,
 off by default, switched in the panel too.
 
+![The port's panel (F12) over the first page: the filters none, smooth, pixelart, scanlines, crt, xbr and super-xbr in turn](docs/filters.gif)
+
 | Key | What it does |
 |---|---|
-| `Display_Shader` | a filter of the picture, through OpenGL: `smooth` (sharp bilinear), `pixelart` (Scale2x), `scanlines`, `crt` |
-| `Additional_Buttons` | Block on a third button of the joystick and on a key: button 3 (X of a pad) has the action `[JoyStick] button3` of `COMIX.INI` (Block by default), set also in the game's Set up Gamepad, and Block has a key, `[Keys] block` (C by default), set also in its Set up Keyboard; the game's own menu gives actions to two buttons only, its keys have no Block, and its Set up Gamepad swaps the names of Block and down (they are right with the mod); also the panel's item "Additional buttons" |
+| `Display_Shader` | a filter of the picture, through OpenGL: `smooth` (sharp bilinear), `pixelart` (Scale2x), `scanlines`, `crt`, `xbr` (xBR: smooth edges of lines and shapes), `super-xbr` (Super-xBR: the picture at twice its size, smoothed) |
+| `Additional_Buttons` | Block on a third button of the joystick and on a key: button 3 (X of a pad) has the action `[JoyStick] button3` of `COMIX.INI` (Block by default), set also in the game's Set up Gamepad, and Block has a key, `[Keys] block` (C by default), set also in its Set up Keyboard; the game's own menu gives actions to two buttons only, its keys have no Block, and its Set up Gamepad swaps the names of Block and down (they are right with the mod); on Android the on-screen buttons get BLOCK, above ACT; also the panel's item "Additional buttons" |
 | `Midi_Effects` | reverb and chorus on the MIDI music, as a General MIDI synthesizer (and fluidsynth) has them: the port's synthesizer has none; also the panel's item "MIDI reverb and chorus" |
 
 ## Building
