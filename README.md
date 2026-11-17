@@ -63,7 +63,8 @@ The Windows 95 version is a piece of history of its own, not a copy of the Mega 
 - The game plays: the menus, the levels, sound and music, the settings, saved in
   `COMIX.INI` as the original does.
 - Linux (x86-64, arm64), Windows (x86-64; it also runs under Wine) and Android (arm64),
-  with on-screen buttons and a touch on the top strip for the window menu.
+  with on-screen buttons and a touch on the top strip for the window menu; KBD opens a
+  full keyboard over the picture.
 
 ![The first page on an Android phone, with the on-screen buttons and BLOCK of the mod Additional_Buttons](docs/android.jpg)
 - The window menu (Full Screen or Window, the settings dialogs), and Esc switching the

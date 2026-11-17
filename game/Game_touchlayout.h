@@ -2,13 +2,14 @@
  * defaults, the data at 0x431860 of COMIX.EXE: the arrows, Z jump, X action,
  * 1-3 the items; F2 is a new game and F3 the pause (its window procedure,
  * WM_KEYDOWN); the window menu (WinApi-menubar.c) opens with a touch in the
- * strip at the top of the screen, beside NEW and PAUSE.  The buttons sit in the black
- * bars beside the 4:3 picture.  With the mod Additional_Buttons the pad has
+ * strip at the top of the screen, beside NEW, KBD and PAUSE.  KBD opens a full
+ * keyboard over the picture.  The buttons sit in the black bars beside the 4:3
+ * picture.  With the mod Additional_Buttons the pad has
  * BLOCK too (C, the default key of [Keys] block; game/WinApi-game-impl.c, which
  * calls TouchGamepad_Relayout when the mod changes): BLOCK above ACT, the
  * items above them. */
 
-#define GP_NBUTTONS 12
+#define GP_NBUTTONS 13
 #define CZ_GREEN 70, 160, 90
 
 /* the mod Additional_Buttons is on (game/WinApi-game-impl.c, C) */
@@ -30,6 +31,7 @@ static GPButton gp_buttons[GP_NBUTTONS] = {
     {0,0,0,0, SDLK_F2,    0, "NEW",   GP_GREY,   -1},
     {0,0,0,0, SDLK_F3,    0, "PAUSE", GP_GREY,   -1},
     {0,0,0,0, SDLK_c,     0, "BLOCK", CZ_GREEN,  -1},
+    {0,0,0,0, TOUCHGAMEPAD_KEYBOARD, 0, "KBD", GP_GREY, -1},
 };
 
 static void gp_place(int index, int x, int y, int w, int h)
@@ -94,7 +96,9 @@ static void gp_layout(int W, int H)
         gp_place(6 + i, x + i * (S + gap), y, S, small);
     }
 
-    /* the commands in the top corners, away from the thumbs */
+    /* the commands in the top corners, away from the thumbs: a new game and
+     * the keyboard on the left, the pause on the right */
     gp_place(9, m, m, S, small);
+    gp_place(12, m + S + gap, m, S, small);
     gp_place(10, W - m - S, m, S, small);
 }
